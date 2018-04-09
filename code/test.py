@@ -15,9 +15,8 @@ import nltk, PyPDF2
 import string
 from nltk import word_tokenize
 from nltk.corpus import stopwords
+from nltk  import FreqDist
 
-nltk.download('stopwords')
-nltk.download('punkt')
 
 
 print("Test File")
@@ -50,6 +49,9 @@ print("==========================\n=\tWith stop removal and .lower "+(str)(len(t
 
 tokenized_set = word_tokenize(text)
 tokenized_sent_nostop = [token for token in tokenized_set if token not in stoplist]
+freq_set = FreqDist(tokenized_set)
 
 print(tokenized_sent_nostop)
 print("==========================\n=\tWith stop removal and no .lower "+(str)(len(tokenized_sent_nostop))+"\n==========================")
+print(freq_set)
+print(freq_set.most_common(50))
