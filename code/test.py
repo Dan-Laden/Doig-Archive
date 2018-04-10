@@ -8,16 +8,19 @@
 # https://github.com/nltk/nltk/wiki/Frequently-Asked-Questions-(Stackoverflow-Edition)
 
 
-
-
-
 import nltk, PyPDF2
 import string
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk  import FreqDist
+import graphene
 
 
+class Query(graphene.ObjectType):
+  hello = graphene.String(description='A typical hello world')
+
+  def resolve_hello(self, info):
+    return 'Hello world!'
 
 print("Test File")
 
@@ -55,3 +58,12 @@ print(tokenized_sent_nostop)
 print("==========================\n=\tWith stop removal and no .lower "+(str)(len(tokenized_sent_nostop))+"\n==========================")
 print(freq_set)
 print(freq_set.most_common(50))
+
+
+print("\n\n\n\n\n\n\n\n")
+
+
+
+schema = graphene.Schema(query=Query)
+result = schema.execute('{ hello }')
+print(result.data['hello'])
