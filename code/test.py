@@ -10,11 +10,11 @@
 
 import nltk, PyPDF2
 import string
-import re
+import re #ref doc: https://docs.python.org/3/library/re.html#re.ASCII
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk  import FreqDist
-#import difflib Library that can compare differences in strings
+import difflib #Library that can compare differences in strings ref doc: https://docs.python.org/2.7/library/difflib.html
 import graphene
 
 
@@ -63,6 +63,13 @@ def listToString(list):
         returnStr = returnStr +" "+ STR
     return returnStr
 
+#XXX:Make sure lists are put into this function
+#This will check the difference between the two lists
+def checkDiff(list1, list2):
+    d = difflib.Differ()
+    diff = d.compare(list1, list2)
+    print ('\n'.join(diff))
+
 print("Test File")
 
 f = open("source/This-House-of-Sky-1-5.pdf", 'rb')
@@ -101,37 +108,51 @@ freq_set = FreqDist(tokenized_set_nostop)
 print(freq_set)
 print(freq_set.most_common(50))
 
+#Parts of Speech ref doc: http://www.nltk.org/book/ch05.html
 POStext = nltk.pos_tag(tokenized_set_nostop)
 POStextL = nltk.pos_tag(tokenized_set_nostop_lower)
 
 
 #Testing for to see what's grabbed from parts of speech. Without Removal of non-ASCII Characters
-print("\n\n"+(str)(POStext))
-print("\n\n"+(str)(POStextL))
+#print("\n\n"+(str)(POStext))
+#print("\n\n"+(str)(POStextL))
 
 #Testing with removing ASCII or UNICODE
 
 
 textASCNP = stripNonAlphaNumASCII(text)
-textASCNPL = stripNonAlphaNumASCII(text.lower())
+#textASCNPL = stripNonAlphaNumASCII(text.lower())
 
 tokenized_set_ASCII = word_tokenize(textASCNP)
 tokenized_set_nostop_ASCII = [token for token in tokenized_set_ASCII if token not in stoplist]
-tokenized_set_lower_ASCII = word_tokenize(textASCNPL)
-tokenized_set_nostop_lower_ASCII = [token for token in tokenized_set_lower_ASCII if token not in stoplist]
+#tokenized_set_lower_ASCII = word_tokenize(textASCNPL)
+#tokenized_set_nostop_lower_ASCII = [token for token in tokenized_set_lower_ASCII if token not in stoplist]
 
-POStextASCII = nltk.pos_tag(tokenized_set_nostop_ASCII)
-POStextASCIIL = nltk.pos_tag(tokenized_set_nostop_lower_ASCII)
-print("\n\n"+(str)(POStextASCII))
-print("\n\n"+(str)(POStextASCIIL))
+#POStextASCII = nltk.pos_tag(tokenized_set_nostop_ASCII)
+POStext = nltk.pos_tag(tokenized_set_nostop_ASCII) #for going forward
+#POStextASCIIL = nltk.pos_tag(tokenized_set_nostop_lower_ASCII)
+#print("\n\n"+(str)(POStextASCII))
+#print("\n\n"+(str)(POStextASCIIL))
 
-print("\n\n"+textASCNP)
-print("\n\n"+textASCNPL)
-print("\n\n"+textASCNP.lower()==textASCNPL)#should be true?
+#print("\n\n"+textASCNP)
+#print("\n\n"+textASCNPL)
+#print("\n\n"+(str)(textASCNP.lower()==textASCNPL))#should be true I think? Yes
 
 
+#keyword generation
+keywordsNN = [] #possible idea remove nouns that are less than 3 characters long
+keywordsVB = [] #possible idea parse it through a dictionary of all english verbs to get rid of random nouns and false positives
+for token in POStext:
+    noun = re.compile('NN(\S*)')
+    verb = re.compile('VB(\S*)')
+    if noun.match(token[1]):
+        keywordsNN.append(token[0])
+        print(token)
+    elif verb.match(token[1]):
+        keywordsVB.append(token[0])
+        print(token)
 
-
+print("\n\n\n"+(str)(keywordsNN)+"\n\n\n"+(str)(keywordsVB))
 
 
 
