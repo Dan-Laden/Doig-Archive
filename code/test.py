@@ -79,52 +79,55 @@ for i in range(0, pdfReader.getNumPages()):
 #    print(page.extractText())
 
 translate_table = dict((ord(char), None) for char in string.punctuation)
-textNPunc = text.translate(translate_table)
-#print(textNPunc)
-#print("==========================\n=\tWithout stop removal "+(str)(len(textNPunc.split()))+"\n==========================")
+text = text.translate(translate_table)
+
+#print(text)
+#print("==========================\n=\tWithout stop removal "+(str)(len(text.split()))+"\n==========================")
 
 stoplist = set(stopwords.words('english'))
 
-tokenized_set = word_tokenize(textNPunc.lower())
-tokenized_sent_nostop = [token for token in tokenized_set if token not in stoplist]
+tokenized_set_lower = word_tokenize(text.lower())
+tokenized_set_nostop_lower = [token for token in tokenized_set_lower if token not in stoplist]
 
-#print(tokenized_sent_nostop)
-#print("==========================\n=\tWith stop removal and .lower "+(str)(len(tokenized_sent_nostop))+"\n==========================")
+#print(tokenized_sent_nostop_lower)
+#print("==========================\n=\tWith stop removal and .lower "+(str)(len(tokenized_sent_nostop_lower))+"\n==========================")
 
-tokenized_NPunc = word_tokenize(textNPunc)
-tokenized_NPunc_nostop = [token for token in tokenized_NPunc if token not in stoplist]
-freq_set = FreqDist(tokenized_NPunc)
+tokenized_set = word_tokenize(text)
+tokenized_set_nostop = [token for token in tokenized_set if token not in stoplist]
+freq_set = FreqDist(tokenized_set_nostop)
 
-#print(tokenized_sent_nostop)
-#print("==========================\n=\tWith stop removal and no .lower "+(str)(len(tokenized_sent_nostop))+"\n==========================")
+#print(tokenized_set_nostop)
+#print("==========================\n=\tWith stop removal and no .lower "+(str)(len(tokenized_set_nostop))+"\n==========================")
 print(freq_set)
 print(freq_set.most_common(50))
 
-POStext = nltk.pos_tag(tokenized_sent_nostop)
-POStextNPunc = nltk.pos_tag(tokenized_NPunc_nostop)
+POStext = nltk.pos_tag(tokenized_set_nostop)
+POStextL = nltk.pos_tag(tokenized_set_nostop_lower)
 
 
 #Testing for to see what's grabbed from parts of speech. Without Removal of non-ASCII Characters
 print("\n\n"+(str)(POStext))
-print("\n\n"+(str)(POStextNPunc))
+print("\n\n"+(str)(POStextL))
 
 #Testing with removing ASCII or UNICODE
 
 
-textASCNP = stripNonAlphaNumASCII(textNPunc)
-textASCNPL = stripNonAlphaNumASCII(textNPunc.lower())
+textASCNP = stripNonAlphaNumASCII(text)
+textASCNPL = stripNonAlphaNumASCII(text.lower())
 
-tokenized_set_ASCII = word_tokenize(textASCNPL)
-tokenized_sent_nostop_ASCII = [token for token in tokenized_set_ASCII if token not in stoplist]
-tokenized_NPunc_ASCII = word_tokenize(textASCNP)
-tokenized_NPunc_nostop_ASCII = [token for token in tokenized_NPunc_ASCII if token not in stoplist]
+tokenized_set_ASCII = word_tokenize(textASCNP)
+tokenized_set_nostop_ASCII = [token for token in tokenized_set_ASCII if token not in stoplist]
+tokenized_set_lower_ASCII = word_tokenize(textASCNPL)
+tokenized_set_nostop_lower_ASCII = [token for token in tokenized_set_lower_ASCII if token not in stoplist]
 
-POStextASCII = nltk.pos_tag(tokenized_sent_nostop_ASCII)
-POStextNPuncASCII = nltk.pos_tag(tokenized_NPunc_nostop_ASCII)
+POStextASCII = nltk.pos_tag(tokenized_set_nostop_ASCII)
+POStextASCIIL = nltk.pos_tag(tokenized_set_nostop_lower_ASCII)
 print("\n\n"+(str)(POStextASCII))
-print("\n\n"+(str)(POStextNPuncASCII))
+print("\n\n"+(str)(POStextASCIIL))
 
 print("\n\n"+textASCNP)
+print("\n\n"+textASCNPL)
+print("\n\n"+textASCNP.lower()==textASCNPL)#should be true?
 
 
 
@@ -139,7 +142,7 @@ fakeKeys1 = ['Montana', 'Fishing', 'Wildlife']
 fakeKeys2 = ['Idaho Falls', 'Troy, Montana', 'Avians']
 
 ch5 = Chapter(number = 5,content=text,keywords=fakeKeys1)
-ch2 = Chapter(number = 2,content=textNPunc,keywords=fakeKeys2)
+ch2 = Chapter(number = 2,content=text,keywords=fakeKeys2)
 
 book1 = Book(title="Sky House",content=text,)
 
