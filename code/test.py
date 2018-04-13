@@ -162,19 +162,31 @@ keywordsNN2chr = []
 for token in POStext:
     noun = re.compile('NN(\S*)')#Looks for any POS labeled NN* NN with any variation on it
     verb = re.compile('VB(\S*)')#Looks for any POS labled VB* VB with any variation on it
+    doig = re.compile('(\S*)Doig(\S*)')
     if noun.match(token[1]):
         if(len(token[0])<3):
             keywordsNN2chr.append(token[0])
         else:
-            keywordsNN.append(token[0])
+            if not(doig.match(token[0])):
+                keywordsNN.append(token[0])
         #print(token)
     elif verb.match(token[1]):
         keywordsVB.append(token[0])
         #print(token)
 
 
-print("\n\n\n"+(str)(keywordsNN)+"\n\n\n"+(str)(keywordsVB))# Prints out what keywords are grabbed
+#print("\n\n\n"+(str)(keywordsNN)+"\n\n\n"+(str)(keywordsVB))# Prints out what keywords are grabbed
 print("\n\n\n\n\n"+(str)(keywordsNN2chr))
+
+
+freq_setNN = FreqDist(keywordsNN)
+#print("\n\n\n"+(str)(freq_setNN))
+#print(freq_setNN.most_common(50))
+freq_setVB = FreqDist(keywordsVB)
+#print("\n\n\n"+(str)(freq_setVB))
+#print(freq_setVB.most_common(50))
+
+
 #TODO fix the keyword tables.
 
 #End of main code
