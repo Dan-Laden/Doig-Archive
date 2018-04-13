@@ -1,6 +1,6 @@
 #################################
-#author@ Daniel Laden           #
-#email@ dthomasladen@gmail.com  #
+# author@ Daniel Laden          #
+# email@ dthomasladen@gmail.com #
 #################################
 
 print("Test File")#This is only a test files this shouldn't be used for production
@@ -53,6 +53,7 @@ class Chapter(graphene.ObjectType):
 
 #########################
 #Main functions for data parsing
+
 #This function removes strange characters that are read in by the PDF reader
 def stripNonAlphaNumASCII(text):
     return listToString(re.compile(r'\W+', re.ASCII).split(text))
@@ -69,6 +70,7 @@ def listToString(list):
         returnStr = returnStr +" "+ STR
     return returnStr
 
+#TODO: Optional idea but make it so Diff doesn't print the lines that don't change.
 #XXX:Make sure lists are put into this function
 #This will check the difference between the two lists
 def checkDiff(list1, list2):
@@ -76,10 +78,11 @@ def checkDiff(list1, list2):
     diff = d.compare(list1, list2)
     print ('\n'.join(diff))
 #End of functions for data parsing
-
+#########################
 
 #########################
 # NOTE Start of main code
+
 #Opening the file and putting it through the PDF reader.
 f = open("source/This-House-of-Sky-1-5.pdf", 'rb')
 pdfReader = PyPDF2.PdfFileReader(f)
