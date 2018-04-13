@@ -178,7 +178,7 @@ for token in POStext:
 #print("\n\n\n"+(str)(keywordsNN)+"\n\n\n"+(str)(keywordsVB))# Prints out what keywords are grabbed
 print("\n\n\n\n\n"+(str)(keywordsNN2chr))
 
-
+#freq tables for word usage
 freq_setNN = FreqDist(keywordsNN)
 #print("\n\n\n"+(str)(freq_setNN))
 #print(freq_setNN.most_common(50))
@@ -188,6 +188,7 @@ freq_setVB = FreqDist(keywordsVB)
 
 
 #TODO fix the keyword tables.
+#TODO write to a .txt file
 
 #End of main code
 #########################
