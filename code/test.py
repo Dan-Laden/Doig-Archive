@@ -84,7 +84,7 @@ def checkDiff(list1, list2):
 # NOTE Start of main code
 
 #Opening the file and putting it through the PDF reader.
-f = open("source/This-House-of-Sky-1-5.pdf", 'rb')
+f = open("source/This-House-of-Sky-1-100.pdf", 'rb')
 pdfReader = PyPDF2.PdfFileReader(f)
 
 
@@ -125,7 +125,7 @@ tokenized_set_nostop = [token for token in tokenized_set if token not in stoplis
 
 #Parts of Speech ref doc: http://www.nltk.org/book/ch05.html
 POStext = nltk.pos_tag(tokenized_set_nostop)
-POStextL = nltk.pos_tag(tokenized_set_nostop_lower)
+#POStextL = nltk.pos_tag(tokenized_set_nostop_lower)
 
 
 #Testing for to see what's grabbed from parts of speech. Without Removal of non-ASCII Characters
@@ -158,19 +158,23 @@ POStext = nltk.pos_tag(tokenized_set_nostop_ASCII) #for going forward
 #keyword generation
 keywordsNN = [] #possible idea remove nouns that are less than 3 characters long
 keywordsVB = [] #possible idea parse it through a dictionary of all english verbs to get rid of random nouns and false positives
+keywordsNN2chr = []
 for token in POStext:
     noun = re.compile('NN(\S*)')#Looks for any POS labeled NN* NN with any variation on it
     verb = re.compile('VB(\S*)')#Looks for any POS labled VB* VB with any variation on it
     if noun.match(token[1]):
-        keywordsNN.append(token[0])
+        if(len(token[0])<3):
+            keywordsNN2chr.append(token[0])
+        else:
+            keywordsNN.append(token[0])
         #print(token)
     elif verb.match(token[1]):
         keywordsVB.append(token[0])
         #print(token)
 
 
-#print("\n\n\n"+(str)(keywordsNN)+"\n\n\n"+(str)(keywordsVB)) Prints out what keywords are grabbed
-
+print("\n\n\n"+(str)(keywordsNN)+"\n\n\n"+(str)(keywordsVB))# Prints out what keywords are grabbed
+print("\n\n\n\n\n"+(str)(keywordsNN2chr))
 #TODO fix the keyword tables.
 
 #End of main code
