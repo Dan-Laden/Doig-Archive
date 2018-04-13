@@ -1,23 +1,24 @@
-#
-#author@ Daniel Laden
-#email@ dthomasladen@gmail.com
-#
-#resources used for code so far
-#
-# https://stackoverflow.com/questions/15547409/how-to-get-rid-of-punctuation-using-nltk-tokenizer
-# https://github.com/nltk/nltk/wiki/Frequently-Asked-Questions-(Stackoverflow-Edition)
+#################################
+#author@ Daniel Laden           #
+#email@ dthomasladen@gmail.com  #
+#################################
 
+print("Test File")#This is only a test files this shouldn't be used for production
 
-import nltk, PyPDF2
-import string
-import re #ref doc: https://docs.python.org/3/library/re.html#re.ASCII
+import nltk #ref doc: http://www.nltk.org/howto/index.html
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk  import FreqDist
-import difflib #Library that can compare differences in strings ref doc: https://docs.python.org/2.7/library/difflib.html
-import graphene
+import string #ref doc: https://docs.python.org/3.3/library/string.html?highlight=string#module-string
+import re #ref doc: https://docs.python.org/3/library/re.html#re.ASCII
+import PyPDF2 #ref doc: https://pythonhosted.org/PyPDF2/
+import difflib #Library that can compare differences in strings ref doc: https://docs.python.org/3.3/library/difflib.html?highlight=difflib#module-difflib
+import graphene #ref doc: http://docs.graphene-python.org/en/latest/quickstart/
 
+stoplist = set(stopwords.words('english'))#set of all stopwords in english thanks to nltk
 
+#########################
+#GraphQL testing classes
 class Query(graphene.ObjectType):
   hello = graphene.String(description='A typical hello world')
 
@@ -46,7 +47,12 @@ class Chapter(graphene.ObjectType):
     number = graphene.Int(description='Chapter Number')
     content = graphene.String(description='Words in the chapter')
     keywords = graphene.List(graphene.String)
+#End of GraphQL test classes
+#########################
 
+
+#########################
+#Main functions for data parsing
 #This function removes strange characters that are read in by the PDF reader
 def stripNonAlphaNumASCII(text):
     return listToString(re.compile(r'\W+', re.ASCII).split(text))
@@ -69,44 +75,50 @@ def checkDiff(list1, list2):
     d = difflib.Differ()
     diff = d.compare(list1, list2)
     print ('\n'.join(diff))
+#End of functions for data parsing
 
-print("Test File")
 
+#########################
+# NOTE Start of main code
+#Opening the file and putting it through the PDF reader.
 f = open("source/This-House-of-Sky-1-5.pdf", 'rb')
-
 pdfReader = PyPDF2.PdfFileReader(f)
+
+
+#Grabbing all the text from the PDF
 text = ""
-
-page = pdfReader.getPage(0)
-
 for i in range(0, pdfReader.getNumPages()):
 #    print("==========================\n=\tPage "+(str)(i+1)+"\n==========================")
     page = pdfReader.getPage(i)
     text = text + page.extractText()
 #    print(page.extractText())
 
+
+#Removing all the punctuation from the text.
 translate_table = dict((ord(char), None) for char in string.punctuation)
 text = text.translate(translate_table)
 
 #print(text)
 #print("==========================\n=\tWithout stop removal "+(str)(len(text.split()))+"\n==========================")
 
-stoplist = set(stopwords.words('english'))
-
-tokenized_set_lower = word_tokenize(text.lower())
-tokenized_set_nostop_lower = [token for token in tokenized_set_lower if token not in stoplist]
-
-#print(tokenized_sent_nostop_lower)
-#print("==========================\n=\tWith stop removal and .lower "+(str)(len(tokenized_sent_nostop_lower))+"\n==========================")
-
+#We look at two forms here either .lower() the text or leave it with it's capitalzation.
 tokenized_set = word_tokenize(text)
 tokenized_set_nostop = [token for token in tokenized_set if token not in stoplist]
-freq_set = FreqDist(tokenized_set_nostop)
 
+# NOTE For now it seems like keeping the capitalzation is for the best
+#tokenized_set_lower = word_tokenize(text.lower())
+#tokenized_set_nostop_lower = [token for token in tokenized_set_lower if token not in stoplist]
+#print(tokenized_sent_nostop_lower)
+#print("==========================\n=\tWith stop removal and .lower "+(str)(len(tokenized_sent_nostop_lower))+"\n==========================")
 #print(tokenized_set_nostop)
 #print("==========================\n=\tWith stop removal and no .lower "+(str)(len(tokenized_set_nostop))+"\n==========================")
-print(freq_set)
-print(freq_set.most_common(50))
+
+
+#Toying with the idea that we can make a freq_set with certain nouns and verbs used in a chapter
+#This is here simply to test the functionality of FreqDist TODO will use later
+#freq_set = FreqDist(tokenized_set_nostop)
+#print(freq_set)
+#print(freq_set.most_common(50))
 
 #Parts of Speech ref doc: http://www.nltk.org/book/ch05.html
 POStext = nltk.pos_tag(tokenized_set_nostop)
@@ -117,46 +129,52 @@ POStextL = nltk.pos_tag(tokenized_set_nostop_lower)
 #print("\n\n"+(str)(POStext))
 #print("\n\n"+(str)(POStextL))
 
-#Testing with removing ASCII or UNICODE
 
-
+#Using this to remove random non-ASCII characters that are from the PDF reader
 textASCNP = stripNonAlphaNumASCII(text)
-#textASCNPL = stripNonAlphaNumASCII(text.lower())
-
 tokenized_set_ASCII = word_tokenize(textASCNP)
 tokenized_set_nostop_ASCII = [token for token in tokenized_set_ASCII if token not in stoplist]
+
+# NOTE might use .lower() for something later but for now we have no real reason to.
+#textASCNPL = stripNonAlphaNumASCII(text.lower())
 #tokenized_set_lower_ASCII = word_tokenize(textASCNPL)
 #tokenized_set_nostop_lower_ASCII = [token for token in tokenized_set_lower_ASCII if token not in stoplist]
-
-#POStextASCII = nltk.pos_tag(tokenized_set_nostop_ASCII)
-POStext = nltk.pos_tag(tokenized_set_nostop_ASCII) #for going forward
 #POStextASCIIL = nltk.pos_tag(tokenized_set_nostop_lower_ASCII)
-#print("\n\n"+(str)(POStextASCII))
 #print("\n\n"+(str)(POStextASCIIL))
-
-#print("\n\n"+textASCNP)
 #print("\n\n"+textASCNPL)
-#print("\n\n"+(str)(textASCNP.lower()==textASCNPL))#should be true I think? Yes
+# NOTE for testing purposes only just to see how .lower() with ASCII removal compares
+#POStextASCII = nltk.pos_tag(tokenized_set_nostop_ASCII)
+#print("\n\n"+(str)(POStextASCII))
+#print("\n\n"+(str)(POStextASCII.lower()==POStextASCIIL))#should be true I think? Yes
+
+
+#putting POS on the list of tokens without stopwords and non-ASCII characters
+POStext = nltk.pos_tag(tokenized_set_nostop_ASCII) #for going forward
 
 
 #keyword generation
 keywordsNN = [] #possible idea remove nouns that are less than 3 characters long
 keywordsVB = [] #possible idea parse it through a dictionary of all english verbs to get rid of random nouns and false positives
 for token in POStext:
-    noun = re.compile('NN(\S*)')
-    verb = re.compile('VB(\S*)')
+    noun = re.compile('NN(\S*)')#Looks for any POS labeled NN* NN with any variation on it
+    verb = re.compile('VB(\S*)')#Looks for any POS labled VB* VB with any variation on it
     if noun.match(token[1]):
         keywordsNN.append(token[0])
-        print(token)
+        #print(token)
     elif verb.match(token[1]):
         keywordsVB.append(token[0])
-        print(token)
-
-print("\n\n\n"+(str)(keywordsNN)+"\n\n\n"+(str)(keywordsVB))
+        #print(token)
 
 
+#print("\n\n\n"+(str)(keywordsNN)+"\n\n\n"+(str)(keywordsVB)) Prints out what keywords are grabbed
 
+#TODO fix the keyword tables.
 
+#End of main code
+#########################
+
+#########################
+#GraphQL testing and playing around
 print("\n\n\n\n\n\n\n\n")
 
 fakeKeys1 = ['Montana', 'Fishing', 'Wildlife']
@@ -179,3 +197,15 @@ print("===Keywords===\n")
 for key in ch5.keywords:
     print(key)
 print("\n")
+#End of GraphQL testing
+#########################
+
+#########################
+#resources used for code so far
+#
+# https://stackoverflow.com/questions/15547409/how-to-get-rid-of-punctuation-using-nltk-tokenizer
+# https://github.com/nltk/nltk/wiki/Frequently-Asked-Questions-(Stackoverflow-Edition)
+# https://programminghistorian.org/lessons/normalizing-data
+# https://pymotw.com/2/difflib/
+# https://www.guru99.com/python-regular-expressions-complete-tutorial.html
+#########################
