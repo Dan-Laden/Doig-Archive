@@ -188,7 +188,14 @@ freq_setVB = FreqDist(keywordsVB)
 
 
 #TODO fix the keyword tables.
-#TODO write to a .txt file
+
+
+#write to a .txt file
+write = open("testwrite.txt", "w")
+
+write.write(text)
+
+write.close()
 
 #End of main code
 #########################
