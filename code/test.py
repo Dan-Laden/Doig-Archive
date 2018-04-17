@@ -95,7 +95,7 @@ for i in range(0, pdfReader.getNumPages()):
     page = pdfReader.getPage(i)
     text = text + page.extractText()
 #    print(page.extractText())
-
+f.close()
 
 #Removing all the punctuation from the text.
 translate_table = dict((ord(char), None) for char in string.punctuation)
@@ -190,12 +190,21 @@ freq_setVB = FreqDist(keywordsVB)
 #TODO fix the keyword tables.
 
 
-#write to a .txt file
-write = open("testwrite.txt", "w")
+#write general text to a .txt file
+f = open("testwrite.txt", "w")
 
-write.write(text)
+f.write(text)
 
-write.close()
+f.close()
+
+#write keywords to to a .txt file
+
+f = open("testkey.txt", "w")
+
+for key in keywordsVB:
+    f.write(key+"; ")
+
+f.close()
 
 #End of main code
 #########################
