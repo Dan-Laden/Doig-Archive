@@ -84,7 +84,7 @@ def checkDiff(list1, list2):
 # NOTE Start of main code
 
 #Opening the file and putting it through the PDF reader.
-f = open("source/This-House-of-Sky-1-100.pdf", 'rb')
+f = open("source/This-House-of-Sky-1-5.pdf", 'rb')
 pdfReader = PyPDF2.PdfFileReader(f)
 
 
@@ -124,7 +124,7 @@ tokenized_set_nostop = [token for token in tokenized_set if token not in stoplis
 #print(freq_set.most_common(50))
 
 #Parts of Speech ref doc: http://www.nltk.org/book/ch05.html
-POStext = nltk.pos_tag(tokenized_set_nostop)
+#POStext = nltk.pos_tag(tokenized_set_nostop)
 #POStextL = nltk.pos_tag(tokenized_set_nostop_lower)
 
 
@@ -134,8 +134,8 @@ POStext = nltk.pos_tag(tokenized_set_nostop)
 
 
 #Using this to remove random non-ASCII characters that are from the PDF reader
-textASCNP = stripNonAlphaNumASCII(text)
-tokenized_set_ASCII = word_tokenize(textASCNP)
+textASC = stripNonAlphaNumASCII(text)
+tokenized_set_ASCII = word_tokenize(textASC)
 tokenized_set_nostop_ASCII = [token for token in tokenized_set_ASCII if token not in stoplist]
 
 # NOTE might use .lower() for something later but for now we have no real reason to.
@@ -176,7 +176,7 @@ for token in POStext:
 
 
 #print("\n\n\n"+(str)(keywordsNN)+"\n\n\n"+(str)(keywordsVB))# Prints out what keywords are grabbed
-print("\n\n\n\n\n"+(str)(keywordsNN2chr))
+#print("\n\n\n\n\n"+(str)(keywordsNN2chr))
 
 #freq tables for word usage
 freq_setNN = FreqDist(keywordsNN)
@@ -193,7 +193,7 @@ freq_setVB = FreqDist(keywordsVB)
 #write general text to a .txt file
 f = open("testwrite.txt", "w")
 
-f.write(text)
+f.write(textASC)
 
 f.close()
 
@@ -205,6 +205,27 @@ for key in keywordsVB:
     f.write(key+"; ")
 
 f.close()
+
+print(type(POStext[0][0]))
+
+#NER generation
+NNPcombined = []
+index = 0
+while index < len(POStext):
+    if POStext[index][1] == 'NNP' and POStext[index+1][1] == 'NNP':
+        POStext[index] = (POStext[index][0] + " " + POStext[index+1][0], 'NNP')
+        NNPcombined.append(POStext[index])
+        #del POStext[index+1]
+    index+=1
+
+print(NNPcombined)
+
+NNPcombined.append(('Sixteen Mile Creek', 'NNP'))
+
+NERtext = nltk.ne_chunk(NNPcombined, binary=True)
+print(NERtext)
+NERtext = nltk.ne_chunk(POStext, binary=True)
+print(NERtext)
 
 #End of main code
 #########################
