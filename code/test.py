@@ -4,6 +4,8 @@
 #################################
 
 print("Test File")#This is only a test files this shouldn't be used for production
+import time
+start_time = time.time()
 
 import nltk #ref doc: http://www.nltk.org/howto/index.html
 from nltk import word_tokenize
@@ -14,6 +16,7 @@ import re #ref doc: https://docs.python.org/3/library/re.html#re.ASCII
 import PyPDF2 #ref doc: https://pythonhosted.org/PyPDF2/
 import difflib #Library that can compare differences in strings ref doc: https://docs.python.org/3.3/library/difflib.html?highlight=difflib#module-difflib
 import graphene #ref doc: http://docs.graphene-python.org/en/latest/quickstart/
+from geopy.geocoders import GeoNames #ref doc: http://geopy.readthedocs.io/en/stable/#
 
 stoplist = set(stopwords.words('english'))#set of all stopwords in english thanks to nltk
 
@@ -84,7 +87,7 @@ def checkDiff(list1, list2):
 # NOTE Start of main code
 
 #Opening the file and putting it through the PDF reader.
-f = open("source/This-House-of-Sky-1-5.pdf", 'rb')
+f = open("source/This-House-of-Sky-1-100.pdf", 'rb')
 pdfReader = PyPDF2.PdfFileReader(f)
 
 
@@ -206,7 +209,7 @@ for key in keywordsVB:
 
 f.close()
 
-print(type(POStext[0][0]))
+#print(type(POStext[0][0]))
 
 #NER generation
 NNPcombined = []
@@ -218,14 +221,29 @@ while index < len(POStext):
         #del POStext[index+1]
     index+=1
 
-print(NNPcombined)
+#print(NNPcombined)
 
 NNPcombined.append(('Sixteen Mile Creek', 'NNP'))
 
 NERtext = nltk.ne_chunk(NNPcombined, binary=True)
-print(NERtext)
+#print(NERtext)
 NERtext = nltk.ne_chunk(POStext, binary=True)
-print(NERtext)
+#print(NERtext)
+
+
+#Using Geopy for geolocations
+geolocator = GeoNames(username="dan_laden")
+geolocations = []
+for location in NNPcombined:
+    geo = geolocator.geocode(location, timeout=10)
+    if not geo == None:
+        if not "MT" in geo.address:
+            locMT = location+ " MT"
+            geo = geolocator.geocode(location, timeout=10)
+        if not geo == None:
+            geolocator.append(geo)
+
+print(geo)
 
 #End of main code
 #########################
@@ -256,7 +274,7 @@ for key in ch5.keywords:
 print("\n")
 #End of GraphQL testing
 #########################
-
+print("--- %s seconds ---" % (time.time() - start_time))
 #########################
 #resources used for code so far
 #
