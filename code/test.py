@@ -87,7 +87,7 @@ def checkDiff(list1, list2):
 # NOTE Start of main code
 
 #Opening the file and putting it through the PDF reader.
-f = open("source/This-House-of-Sky-1-100.pdf", 'rb')
+f = open("source/This-House-of-Sky.pdf", 'rb')
 pdfReader = PyPDF2.PdfFileReader(f)
 
 
@@ -193,6 +193,16 @@ freq_setVB = FreqDist(keywordsVB)
 #TODO fix the keyword tables.
 
 
+#TODO chapter splitting
+chapter = re.compile("[A-Z]+")
+index = 0
+while index < len(POStext):
+    if chapter.match(POStext[index][0]):
+        reg = chapter.match(POStext[index][0])
+        if reg.group() == POStext[index][0] and len(POStext[index][0])>2:
+            print(POStext[index][0])
+    index+=1
+
 #write general text to a .txt file
 f = open("testwrite.txt", "w")
 
@@ -223,6 +233,7 @@ while index < len(POStext):
 
 #print(NNPcombined)
 
+
 #NOTE Testing things around NER
 #NERtext = nltk.ne_chunk(NNPcombined, binary=True)
 #print(NERtext)
@@ -249,30 +260,33 @@ while index < len(POStext):
 
 #########################
 #GraphQL testing and playing around
-print("\n\n\n\n\n\n\n\n")
-
-fakeKeys1 = ['Montana', 'Fishing', 'Wildlife']
-fakeKeys2 = ['Idaho Falls', 'Troy, Montana', 'Avians']
-
-ch5 = Chapter(number = 5,content=text,keywords=fakeKeys1)
-ch2 = Chapter(number = 2,content=text,keywords=fakeKeys2)
-
-book1 = Book(title="Sky House",content=text,)
-
-schema = graphene.Schema(query=Query)
-result = schema.execute('{ hello }')
-print(result.data['hello'])
-
-print("\n\n\n")
-print("===Test for GraphQL===")
-print("Chapter: "+(str)(ch5.number)+"\n")
-#print("===Content===\n"+ch5.content+"\n")
-print("===Keywords===\n")
-for key in ch5.keywords:
-    print(key)
-print("\n")
+# print("\n\n\n\n\n\n\n\n")
+#
+# fakeKeys1 = ['Montana', 'Fishing', 'Wildlife']
+# fakeKeys2 = ['Idaho Falls', 'Troy, Montana', 'Avians']
+#
+# ch5 = Chapter(number = 5,content=text,keywords=fakeKeys1)
+# ch2 = Chapter(number = 2,content=text,keywords=fakeKeys2)
+#
+# book1 = Book(title="Sky House",content=text,)
+#
+# schema = graphene.Schema(query=Query)
+# result = schema.execute('{ hello }')
+# print(result.data['hello'])
+#
+# print("\n\n\n")
+# print("===Test for GraphQL===")
+# print("Chapter: "+(str)(ch5.number)+"\n")
+# #print("===Content===\n"+ch5.content+"\n")
+# print("===Keywords===\n")
+# for key in ch5.keywords:
+#     print(key)
+# print("\n")
 #End of GraphQL testing
 #########################
+
+
+
 print("--- %s seconds ---" % (time.time() - start_time))
 #########################
 #resources used for code so far
