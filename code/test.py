@@ -231,19 +231,19 @@ NERtext = nltk.ne_chunk(POStext, binary=True)
 #print(NERtext)
 
 
-#Using Geopy for geolocations
-geolocator = GeoNames(username="dan_laden")
-geolocations = []
-for location in NNPcombined:
-    geo = geolocator.geocode(location, timeout=10)
-    if not geo == None:
-        if not "MT" in geo.address:
-            locMT = location+ " MT"
-            geo = geolocator.geocode(location, timeout=10)
-        if not geo == None:
-            geolocator.append(geo)
-
-print(geo)
+#Using Geopy for geolocations NOTE this works
+# geolocator = GeoNames(username="dan_laden")
+# geolocations = []
+# for location in NNPcombined:
+#     geo = geolocator.geocode(location[0], timeout=10)
+#     if not geo == None:
+#         if not "MT" in geo.address:
+#             locMT = location[0]+ " MT"
+#             geo = geolocator.geocode(locMT, timeout=10)
+#         if not geo == None and "MT" in geo.address:
+#             geolocations.append(geo)
+#
+# print(geolocations)
 
 #End of main code
 #########################
