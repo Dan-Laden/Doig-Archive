@@ -10,6 +10,7 @@ start_time = time.time()
 import nltk #ref doc: http://www.nltk.org/howto/index.html
 from nltk import word_tokenize
 from nltk.corpus import stopwords
+from nltk.corpus import words
 from nltk  import FreqDist
 import string #ref doc: https://docs.python.org/3.3/library/string.html?highlight=string#module-string
 import re #ref doc: https://docs.python.org/3/library/re.html#re.ASCII
@@ -87,7 +88,7 @@ def checkDiff(list1, list2):
 # NOTE Start of main code
 
 #Opening the file and putting it through the PDF reader.
-f = open("source/This-House-of-Sky.pdf", 'rb')
+f = open("source/This-House-of-Sky-1-100.pdf", 'rb')
 pdfReader = PyPDF2.PdfFileReader(f)
 
 
@@ -189,19 +190,30 @@ freq_setVB = FreqDist(keywordsVB)
 #print("\n\n\n"+(str)(freq_setVB))
 #print(freq_setVB.most_common(50))
 
+print(words.words())
 
-#TODO fix the keyword tables.
+# #TODO fix the keyword tables.
+# def verbOpt(list):
+#     index = 0
+#     while index < len(list):
+#         if not(list[index] in words.words()):
+#             print(list[index])
+#             del list[index]
+#         index+=1
+#     return list
+# 
+# keywordsVB = verbOpt(keywordsVB)
+
 
 
 #TODO chapter splitting
-chapter = re.compile("[A-Z]+")
-index = 0
-while index < len(POStext):
-    if chapter.match(POStext[index][0]):
-        reg = chapter.match(POStext[index][0])
-        if reg.group() == POStext[index][0] and len(POStext[index][0])>2:
-            print(POStext[index][0])
-    index+=1
+# chapter = re.compile("[A-Z]+")
+# index = 0
+# while index < len(POStext):
+#     if chapter.match(POStext[index][0]):
+#         reg = chapter.match(POStext[index][0])
+#         if reg.group() == POStext[index][0] and len(POStext[index][0])>2:
+#     index+=1
 
 #write general text to a .txt file
 f = open("testwrite.txt", "w")
