@@ -223,8 +223,6 @@ while index < len(POStext):
 
 #print(NNPcombined)
 
-NNPcombined.append(('Sixteen Mile Creek', 'NNP'))
-
 #NOTE Testing things around NER
 #NERtext = nltk.ne_chunk(NNPcombined, binary=True)
 #print(NERtext)
