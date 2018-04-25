@@ -84,11 +84,11 @@ def checkDiff(list1, list2):
     print ('\n'.join(diff))
 
 def geoLocate(location, queue):
-    geo = geolocator.geocode(location, timeout=10)
+    geo = geolocator.geocode(location, timeout=20)
     if not geo == None:
         if not "MT" in geo.address:
             locMT = location+ " MT"
-            geo = geolocator.geocode(locMT, timeout=10)
+            geo = geolocator.geocode(locMT, timeout=20)
         if not geo == None and "MT" in geo.address:
             queue.put(geo)
 #End of functions for data parsing
@@ -271,13 +271,15 @@ for loc in NNPcombined:
     proc.append(p)
     p.start()
 
+time.sleep(20)
+
 index = 0
 while index < len(proc):
     if not(proc[index].is_alive()):
         index+=1
 
 while not queue.empty():
-    print(queue.get)
+    print(queue.get_nowait())
 
 #End of main code
 #########################
