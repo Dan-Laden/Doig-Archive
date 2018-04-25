@@ -17,6 +17,7 @@ import re #ref doc: https://docs.python.org/3/library/re.html#re.ASCII
 import PyPDF2 #ref doc: https://pythonhosted.org/PyPDF2/
 import difflib #Library that can compare differences in strings ref doc: https://docs.python.org/3.3/library/difflib.html?highlight=difflib#module-difflib
 import graphene #ref doc: http://docs.graphene-python.org/en/latest/quickstart/
+import multiprocessing
 from geopy.geocoders import GeoNames #ref doc: http://geopy.readthedocs.io/en/stable/#
 
 stoplist = set(stopwords.words('english'))#set of all stopwords in english thanks to nltk
@@ -81,6 +82,15 @@ def checkDiff(list1, list2):
     d = difflib.Differ()
     diff = d.compare(list1, list2)
     print ('\n'.join(diff))
+
+def geoLocate(location, queue):
+    geo = geolocator.geocode(location, timeout=10)
+    if not geo == None:
+        if not "MT" in geo.address:
+            locMT = location+ " MT"
+            geo = geolocator.geocode(locMT, timeout=10)
+        if not geo == None and "MT" in geo.address:
+            queue.put(geo)
 #End of functions for data parsing
 #########################
 
@@ -190,8 +200,6 @@ freq_setVB = FreqDist(keywordsVB)
 #print("\n\n\n"+(str)(freq_setVB))
 #print(freq_setVB.most_common(50))
 
-print(words.words())
-
 # #TODO fix the keyword tables.
 # def verbOpt(list):
 #     index = 0
@@ -201,7 +209,7 @@ print(words.words())
 #             del list[index]
 #         index+=1
 #     return list
-# 
+#
 # keywordsVB = verbOpt(keywordsVB)
 
 
@@ -254,18 +262,22 @@ while index < len(POStext):
 
 
 #Using Geopy for geolocations NOTE this works
-# geolocator = GeoNames(username="dan_laden")
-# geolocations = []
-# for location in NNPcombined:
-#     geo = geolocator.geocode(location[0], timeout=10)
-#     if not geo == None:
-#         if not "MT" in geo.address:
-#             locMT = location[0]+ " MT"
-#             geo = geolocator.geocode(locMT, timeout=10)
-#         if not geo == None and "MT" in geo.address:
-#             geolocations.append(geo)
-#
-# print(geolocations)
+geolocator = GeoNames(username="dan_laden")
+geolocations = []
+queue = multiprocessing.Queue()
+proc = []
+for loc in NNPcombined:
+    p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue))
+    proc.append(p)
+    p.start()
+
+index = 0
+while index < len(proc):
+    if not(proc[index].is_alive()):
+        index+=1
+
+while not queue.empty():
+    print(queue.get)
 
 #End of main code
 #########################
