@@ -91,6 +91,15 @@ def geoLocate(location, queue):
             geo = geolocator.geocode(locMT, timeout=20)
         if not geo == None and "MT" in geo.address:
             queue.put(geo)
+
+def geoLcate(location):
+    geo = geolocator.geocode(location, timeout=20)
+    if not geo == None:
+        if not "MT" in geo.address:
+            locMT = location+ " MT"
+            geo = geolocator.geocode(locMT, timeout=20)
+        if not geo == None and "MT" in geo.address:
+            return geo
 #End of functions for data parsing
 #########################
 
@@ -278,8 +287,21 @@ while index < len(proc):
     if not(proc[index].is_alive()):
         index+=1
 
+test7 = []
 while not queue.empty():
-    print(queue.get_nowait())
+    test7.append(queue.get_nowait())
+
+test8 = []
+for loc in NNPcombined:
+    thing = geoLcate(loc[0])
+    if not(thing == None):
+        test8.append(thing)
+
+print(len(test7) == len(test8))
+print(len(test7))
+print(len(test8))
+print(test7)
+print(test8)
 
 #End of main code
 #########################
