@@ -135,6 +135,9 @@ def checkDiff(list1, list2):
     diff = d.compare(list1, list2)
     print ('\n'.join(diff))
 
+def createFreqDist(keyword):
+    return FreqDist(keyword)
+
 def geoLocate(location, queue):
     geo = geolocator.geocode(location, timeout=20)
     if not geo == None:
@@ -159,15 +162,6 @@ while(argc<sys.argc):#Opening the file and putting it through the PDF reader.
     rawText = readText(PyPDF2.PdfFileReader(f))
     rawFiles[sys.argv[argc]] = rawText
     argc+=1
-
-
-
-#freq tables for word usage
-freq_setNN = FreqDist(keywordsNN)
-
-freq_setVB = FreqDist(keywordsVB)
-
-
 
 
 #End of main code
