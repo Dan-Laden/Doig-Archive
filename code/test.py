@@ -230,23 +230,23 @@ while index < len(POStext):
 geolocator = GeoNames(username="dan_laden")
 geolocations = []
 queue = multiprocessing.Queue()
-proc = []
+# proc = []
 for loc in NNPcombined:
     p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue))
-    proc.append(p)
+    # proc.append(p)
     p.start()
 
 time.sleep(20)
 
-index = 0
-while index < len(proc):
-    if not(proc[index].is_alive()):
-        index+=1
+# index = 0
+# while index < len(proc):
+#     if not(proc[index].is_alive()):
+#         index+=1
 
-geolocations = []
 while not queue.empty():
     geolocations.append(queue.get_nowait())
 
+print (len(geolocations))
 #End of main code
 #########################
 
@@ -259,4 +259,7 @@ print("--- %s seconds ---" % (time.time() - start_time))
 # https://programminghistorian.org/lessons/normalizing-data
 # https://pymotw.com/2/difflib/
 # https://www.guru99.com/python-regular-expressions-complete-tutorial.html
+# https://stackoverflow.com/questions/156360/get-all-items-from-thread-queue
+# https://stackoverflow.com/questions/39773377/python-multiprocessing-check-status-of-each-processes
+# https://stackoverflow.com/questions/34584629/regex-for-catching-only-upper-case-matches/34584693
 #########################
