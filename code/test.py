@@ -144,7 +144,9 @@ for token in POStext:
     doig = re.compile('(\S*)Doig(\S*)')
     if noun.match(token[1]):
         if(len(token[0])<3):
-            keywordsNN2chr.append(token[0])
+            if(len(token[0])>1):
+                if not(token[0].lower() in words.words()):
+                    keywordsNN2chr.append(token[0])
         else:
             if not(doig.match(token[0])):
                 keywordsNN.append(token[0])
@@ -155,7 +157,7 @@ for token in POStext:
 
 
 #print("\n\n\n"+(str)(keywordsNN)+"\n\n\n"+(str)(keywordsVB))# Prints out what keywords are grabbed
-#print("\n\n\n\n\n"+(str)(keywordsNN2chr))
+print("\n\n\n\n\n"+(str)(keywordsNN2chr))
 
 #freq tables for word usage
 freq_setNN = FreqDist(keywordsNN)
@@ -246,7 +248,7 @@ time.sleep(20)
 while not queue.empty():
     geolocations.append(queue.get_nowait())
 
-print (len(geolocations))
+print (geolocations)
 #End of main code
 #########################
 
