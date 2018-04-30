@@ -5,6 +5,9 @@ nav ul li {float: left; width: 33.31%;}
   width: 60%;
   background: blue;
 }
+#Top-Content{
+  display: flex;
+}
 #Item-Picture h1{
   text-align: center;
 }

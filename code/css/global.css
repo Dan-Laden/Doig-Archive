@@ -1,5 +1,5 @@
+ul{list-style-type: none;}
 nav ul {
-  list-style-type: none;
   margin: auto;
   padding: 0;
   overflow: hidden;
@@ -35,7 +35,6 @@ nav ul li a:hover {
 }
 #Top-Content{
   background: yellow;
-  display: flex;
 }
 
 #Bottom-Content{
