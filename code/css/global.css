@@ -9,22 +9,22 @@ nav ul {
   top: 0;
   width: 100%;
 }
-li {float: left; width: 33.333333%;}
 a {color:inherit;}
-li a{
+nav ul li a{
+  border: 1px solid #555;
   display: block;
-  color: 333;
+  color: #333;
   text-align: center;
   font-family: sans-serif;
   padding: 5px 0px;
   text-decoration: none;
 }
-li a:hover {
+nav ul li a:hover {
   background-color: #e0e0e0;
 }
 
 #Main{
-  float: left
+  float: left;
   width: 100%;
   height: 100%;
   background: green;
@@ -35,30 +35,18 @@ li a:hover {
 }
 #Top-Content{
   background: yellow;
+  display: flex;
 }
-#Item-Picture{
-  float: left;
-  width: 40%;
-  background: blue;
-}
-#Item-Picture h1{
-  text-align: center;
-}
-#Item-Picture img{
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  padding-bottom: 10%;
-  max-width: 250px;
-  height: auto;
-}
-#Item-Content{
-  background:pink;
-}
+
 #Bottom-Content{
   background: orange;
 }
-#Related-Content
+#menu-return
 {
-  background: #e0e0e0;
+  padding: 25px 20px;
+  border-radius: 25%;
+}
+#menu-return:hover{
+    background-color: #333;
+    color: white;
 }
