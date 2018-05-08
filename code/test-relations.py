@@ -36,7 +36,7 @@ file = open("testkey.txt", "r")
 
 rel_arr = buildRelations(file)
 
-print(rel_arr[4].source + ", " + rel_arr[4].keyword + ", " + (str)(rel_arr[4].occurrences))
+#print(rel_arr[4].source + ", " + rel_arr[4].keyword + ", " + (str)(rel_arr[4].occurrences))
 
 print("--- %s seconds ---" % (time.time() - start_time))
 #########################
