@@ -19,12 +19,21 @@ import difflib #Library that can compare differences in strings ref doc: https:/
 import multiprocessing
 import sys
 import os
+import errno
 from geopy.geocoders import GeoNames #ref doc: http://geopy.readthedocs.io/en/stable/#
 
 stoplist = set(stopwords.words('english'))#set of all stopwords in english thanks to nltk
 
 #########################
 #Main functions for data parsing
+
+def semanticActions(dictionary):
+    for key in dictionary:
+        tokens = POStagging(dictionary[key])
+        keywords = keywordGenerator(tokens)
+        places = multiwordPlace(tokens)
+        geoplaces = geoServer(places)
+        output(key, dictionary[key], keywords, geoplaces)
 
 #This function reads in text from a pdf and returns it without punctuation
 def readText(pdfR):
@@ -39,7 +48,7 @@ def readText(pdfR):
 
     #Removing all the punctuation from the text.
     translate_table = dict((ord(char), None) for char in string.punctuation)
-    return text.translate(translate_table)
+    return stripNonAlphaNumASCII(text.translate(translate_table))
 
 #This function removes strange characters that are read in by the PDF reader
 def stripNonAlphaNumASCII(text):
@@ -48,12 +57,11 @@ def stripNonAlphaNumASCII(text):
 #This function returns a list of all Part of Speech tags in the put in text
 def POStagging(text):
     #Using this to remove random non-ASCII characters that are from the PDF reader
-    textASC = stripNonAlphaNumASCII(text)
-    tokenized_set_ASCII = word_tokenize(textASC)
-    tokenized_set_nostop_ASCII = [token for token in tokenized_set_ASCII if token not in stoplist]
+    tokenized_set = word_tokenize(text)
+    tokenized_set_nostop = [token for token in tokenized_set if token not in stoplist]
 
     #putting POS on the list of tokens without stopwords and non-ASCII characters
-    return nltk.pos_tag(tokenized_set_nostop_ASCII)
+    return nltk.pos_tag(tokenized_set_nostop)
 
 #This function returns two different types of keywords (nouns, verbs)
 def keywordGenerator(POStext):
@@ -76,25 +84,39 @@ def keywordGenerator(POStext):
     return (keywordsNN, keywordsVB)
 
 #This function outputs two text files of rich text for additional sourcing
-def output(filename, rawtext, keywords):
+def output(filename, rawtext, keywordlist, geolocations):
     #write general text to a .txt file
-    f = open(("Raw_"+filename+".txt"), "w")
+    path = "output/Raw/Raw-"+filename+".txt"
+    makedir(path)
+    f = open(path, "w")
 
     f.write(rawtext)
 
     f.close()
 
-    #write keywords to to a .txt file
+    #write keywords to a .txt file
 
-    f = open(filename+"_Keywords.txt", "w")
+    path = "output/Keywords/"+filename+"-Keywords.txt"
+    makedir(path)
+    f = open(path, "w")
+    for keywords in keywordlist:
+        for key in keywords:
+            f.write(key+"; ")
 
-    for key in keywords:
-        f.write(key+"; ")
+    f.close()
+
+    #write geolocations to a .txt file
+    path = "output/Geolocations/"+filename+"-Geolocations.txt"
+    makedir(path)
+    f = open(path, "w")
+
+    for geoloc in geolocations:
+        f.write(geoloc.address+"; ")
 
     f.close()
 
 #This function creates a list of compound places to iterate through for locational checking.
-def multiwordplace(POStext):
+def multiwordPlace(POStext):
     compoundLoc = []
     index = 0
     while index < len(POStext):
@@ -106,16 +128,16 @@ def multiwordplace(POStext):
     return compoundLoc
 
 #This function takes in a list of places and tries it's best to locate what is possibly a match
-def geolocate(listPlaces):
+def geoServer(listPlaces):
     #Using Geopy for geolocations
     geolocator = GeoNames(username="dan_laden")
     geolocations = []
     queue = multiprocessing.Queue()
     for loc in listPlaces:
-        p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue))
+        p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue, geolocator))
         p.start()
 
-    time.sleep(20)#Wait till everything finishes
+    time.sleep(30)#Wait till everything finishes
 
     while not queue.empty():
         geolocations.append(queue.get_nowait())
@@ -139,14 +161,25 @@ def checkDiff(list1, list2):
 def createFreqDist(keyword):
     return FreqDist(keyword)
 
-def geoLocate(location, queue):
-    geo = geolocator.geocode(location, timeout=20)
+def geoLocate(location, queue, geoloc):
+    geo = geoloc.geocode(location, timeout=20)
     if not geo == None:
         if not "MT" in geo.address:
             locMT = location+ " MT"
-            geo = geolocator.geocode(locMT, timeout=20)
+            geo = geoloc.geocode(locMT, timeout=20)
         if not geo == None and "MT" in geo.address:
             queue.put(geo)
+
+
+#NOTE: not my code this is from: https://stackoverflow.com/a/12517490/8967976
+#This is to create the directories for the files being outputted
+def makedir(path):
+    if not os.path.exists(os.path.dirname(path)):
+        try:
+            os.makedirs(os.path.dirname(path))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
 #End of functions for data parsing
 #########################
 
@@ -177,9 +210,7 @@ while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reade
 
     argc+=1
 
-for key in rawFiles:
-    print("\n\n\n\n========="+key+"=========\n\n\n\n")
-    print(rawFiles[key])
+semanticActions(rawFiles)
 
 #End of main code
 #########################
@@ -196,4 +227,5 @@ print("--- %s seconds ---" % (time.time() - start_time))
 # https://stackoverflow.com/questions/156360/get-all-items-from-thread-queue
 # https://stackoverflow.com/questions/39773377/python-multiprocessing-check-status-of-each-processes
 # https://stackoverflow.com/questions/34584629/regex-for-catching-only-upper-case-matches/34584693
+# https://stackoverflow.com/questions/12517451/automatically-creating-directories-with-file-output
 #########################
