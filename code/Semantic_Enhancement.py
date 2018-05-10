@@ -18,6 +18,7 @@ import PyPDF2 #ref doc: https://pythonhosted.org/PyPDF2/
 import difflib #Library that can compare differences in strings ref doc: https://docs.python.org/3.3/library/difflib.html?highlight=difflib#module-difflib
 import multiprocessing
 import sys
+import os
 from geopy.geocoders import GeoNames #ref doc: http://geopy.readthedocs.io/en/stable/#
 
 stoplist = set(stopwords.words('english'))#set of all stopwords in english thanks to nltk
@@ -152,17 +153,33 @@ def geoLocate(location, queue):
 #########################
 # NOTE Start of main code
 rawFiles = {}
-argc = 1
+argc = 1 #for all the directories to go into
 if(argc == len(sys.argv)):
     print("Please include files to parse")
     exit()
-while(argc<sys.argc):#Opening the file and putting it through the PDF reader.
-    filepath = "source/"+sys.argv[argc]
-    f = open(filepath, 'rb')
-    rawText = readText(PyPDF2.PdfFileReader(f))
-    rawFiles[sys.argv[argc]] = rawText
+while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reader.
+    count = 1 #Due to naming conventions all chapters of books will be source/[bookname]/[bookname]-[chapter number]
+    filepath = "source/"+sys.argv[argc]#NOTE:
+    if(os.path.exists(filepath)):
+        key = sys.argv[argc]+"-"+(str)(count)
+        path = filepath+"/"+key+".pdf"
+        while(os.path.exists(path)):
+            f = open(path, 'rb')
+            rawText = readText(PyPDF2.PdfFileReader(f))
+            rawFiles[key] = rawText
+            count+=1
+            key = sys.argv[argc]+"-"+(str)(count)
+            path = filepath+"/"+key+".pdf"
+
+    #If the folder holding the chapters isn't found this prints out then continues running through.
+    elif(not(os.path.exists(filepath)) and filepath == ("source/"+sys.argv[argc])):
+        print(sys.argv[argc]+" is not a valid directory please try again next run")
+
     argc+=1
 
+for key in rawFiles:
+    print("\n\n\n\n========="+key+"=========\n\n\n\n")
+    print(rawFiles[key])
 
 #End of main code
 #########################
