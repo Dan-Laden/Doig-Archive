@@ -27,13 +27,13 @@ stoplist = set(stopwords.words('english'))#set of all stopwords in english thank
 #########################
 #Main functions for data parsing
 
-def semanticActions(dictionary):
-    for key in dictionary:
-        tokens = POStagging(dictionary[key])
-        keywords = keywordGenerator(tokens)
-        places = multiwordPlace(tokens)
-        geoplaces = geoServer(places)
-        output(key, dictionary[key], keywords, geoplaces)
+def semanticActions(key, text):
+    print("--- %s key time seconds ---" % (time.time() - start_time))
+    tokens = POStagging(text)
+    keywords = keywordGenerator(tokens)
+    places = multiwordPlace(tokens)
+    geoplaces = geoServer(places)
+    output(key, text, keywords, geoplaces)
 
 #This function reads in text from a pdf and returns it without punctuation
 def readText(pdfR):
@@ -86,46 +86,44 @@ def keywordGenerator(POStext):
 #This function outputs two text files of rich text for additional sourcing
 def output(filename, rawtext, keywordlist, geolocations):
     #write general text to a .txt file
-    path = "output/Raw/Raw-"+filename+".txt"
-    makedir(path)
-    f = open(path, "w")
+    filetypes = ["Raw", "Keywords", "Geolocations"]
+    for types in filetypes:
+        path = "output/"+filename[:(len(filename))-2]+"/"+types+"/"+types+"-"+filename+".txt"
+        makedir(path)
+        f = open(path, "w")
 
-    f.write(rawtext)
+        if(types == "Raw"):
+            f.write(rawtext)
+        elif(types == "Keywords"):
+            for keywords in keywordlist:
+                for key in keywords:
+                    f.write(key+"; ")
+        else:
+            for geoloc in geolocations:
+                f.write(geoloc.address+"; ")
 
-    f.close()
-
-    #write keywords to a .txt file
-
-    path = "output/Keywords/"+filename+"-Keywords.txt"
-    makedir(path)
-    f = open(path, "w")
-    for keywords in keywordlist:
-        for key in keywords:
-            f.write(key+"; ")
-
-    f.close()
-
-    #write geolocations to a .txt file
-    path = "output/Geolocations/"+filename+"-Geolocations.txt"
-    makedir(path)
-    f = open(path, "w")
-
-    for geoloc in geolocations:
-        f.write(geoloc.address+"; ")
-
-    f.close()
+        f.close()
 
 #This function creates a list of compound places to iterate through for locational checking.
 def multiwordPlace(POStext):
     compoundLoc = []
     index = 0
     while index < len(POStext):
-        if POStext[index][1] == 'NNP' and POStext[index+1][1] == 'NNP':
-            POStext[index] = (POStext[index][0] + " " + POStext[index+1][0], 'NNP')
-            compoundLoc.append(POStext[index])
-            #del POStext[index+1]
-        index+=1
+        try:
+            if POStext[index][1] == 'NNP' and POStext[index+1][1] == 'NNP':
+                    POStext[index] = (POStext[index][0] + " " + POStext[index+1][0], 'NNP')
+                    compoundLoc.append(POStext[index])
+                    #del POStext[index+1]
+            index+=1
+        except IndexError:
+            index+=1
+            #do nothing
+
     return compoundLoc
+
+class Geothing:
+    def __init__(self):
+        self.address = "placeholder"
 
 #This function takes in a list of places and tries it's best to locate what is possibly a match
 def geoServer(listPlaces):
@@ -134,13 +132,14 @@ def geoServer(listPlaces):
     geolocations = []
     queue = multiprocessing.Queue()
     for loc in listPlaces:
-        p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue, geolocator))
-        p.start()
+        #p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue, geolocator))
+        #p.start()
+        geolocations.append(Geothing())
 
     time.sleep(30)#Wait till everything finishes
 
-    while not queue.empty():
-        geolocations.append(queue.get_nowait())
+    #while not queue.empty():
+    #    geolocations.append(queue.get_nowait())
     return geolocations
 
 #This takes a list and converts is into a string
@@ -210,7 +209,15 @@ while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reade
 
     argc+=1
 
-semanticActions(rawFiles)
+print("--- %s loading files time seconds ---" % (time.time() - start_time))
+process_queue = []
+for key in rawFiles:
+    p = multiprocessing.Process(target=semanticActions, args=(key, rawFiles[key], ))
+    p.start()
+    process_queue.append(p)
+
+for proc in process_queue:
+    proc.join()
 
 #End of main code
 #########################
@@ -228,4 +235,5 @@ print("--- %s seconds ---" % (time.time() - start_time))
 # https://stackoverflow.com/questions/39773377/python-multiprocessing-check-status-of-each-processes
 # https://stackoverflow.com/questions/34584629/regex-for-catching-only-upper-case-matches/34584693
 # https://stackoverflow.com/questions/12517451/automatically-creating-directories-with-file-output
+# https://stackoverflow.com/questions/1559125/string-arguments-in-python-multiprocessing #XXX stupidest error yet
 #########################
