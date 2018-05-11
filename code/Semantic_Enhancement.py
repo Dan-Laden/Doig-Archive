@@ -16,10 +16,10 @@ import string #ref doc: https://docs.python.org/3.3/library/string.html?highligh
 import re #ref doc: https://docs.python.org/3/library/re.html#re.ASCII
 import PyPDF2 #ref doc: https://pythonhosted.org/PyPDF2/
 import difflib #Library that can compare differences in strings ref doc: https://docs.python.org/3.3/library/difflib.html?highlight=difflib#module-difflib
-import multiprocessing
-import sys
-import os
-import errno
+import multiprocessing #ref doc: https://docs.python.org/3.6/library/multiprocessing.html
+import sys #ref doc: https://docs.python.org/3.6/library/sys.html
+import os #ref doc: https://docs.python.org/3.6/library/os.html
+import errno #ref doc: https://docs.python.org/3.6/library/errno.html
 from geopy.geocoders import GeoNames #ref doc: http://geopy.readthedocs.io/en/stable/#
 
 stoplist = set(stopwords.words('english'))#set of all stopwords in english thanks to nltk
@@ -27,6 +27,7 @@ stoplist = set(stopwords.words('english'))#set of all stopwords in english thank
 #########################
 #Main functions for data parsing
 
+#Main function that executes all the functions before for parsing, dividing, and serving up enriched text.
 def semanticActions(key, text):
     print("--- %s key time seconds ---" % (time.time() - start_time))
     tokens = POStagging(text)
@@ -67,7 +68,7 @@ def POStagging(text):
 def keywordGenerator(POStext):
     keywordsNN = []
     keywordsVB = []
-    keywordsNN2chr = []
+    keywordsNN2chr = [] #For testing and debate on weither or not to include 2 character strings as nouns
     for token in POStext:
         noun = re.compile('NN(\S*)')#Looks for any POS labeled NN* NN with any variation on it
         verb = re.compile('VB(\S*)')#Looks for any POS labled VB* VB with any variation on it
@@ -105,6 +106,7 @@ def output(filename, rawtext, keywordlist, geolocations):
         f.close()
 
 #This function creates a list of compound places to iterate through for locational checking.
+#Creates two or more string tokens
 def multiwordPlace(POStext):
     compoundLoc = []
     index = 0
@@ -121,7 +123,7 @@ def multiwordPlace(POStext):
 
     return compoundLoc
 
-class Geothing:
+class Geothing:#For testing
     def __init__(self):
         self.address = "placeholder"
 
@@ -134,7 +136,7 @@ def geoServer(listPlaces):
     for loc in listPlaces:
         #p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue, geolocator))
         #p.start()
-        geolocations.append(Geothing())
+        geolocations.append(Geothing())#For now this has a placeholder class till XXX usage of this API is resolved
 
     time.sleep(30)#Wait till everything finishes
 
@@ -150,16 +152,8 @@ def listToString(list):
         returnStr = returnStr +" "+ STR
     return returnStr
 
-#TODO: Optional idea but make it so Diff doesn't print the lines that don't change.
-#This will check the difference between the two lists
-def checkDiff(list1, list2):
-    d = difflib.Differ()
-    diff = d.compare(list1, list2)
-    print ('\n'.join(diff))
 
-def createFreqDist(keyword):
-    return FreqDist(keyword)
-
+#This function is used by a multiprocessing queue in geoServer. This is where all locations are resolved
 def geoLocate(location, queue, geoloc):
     geo = geoloc.geocode(location, timeout=20)
     if not geo == None:
@@ -186,19 +180,19 @@ def makedir(path):
 # NOTE Start of main code
 rawFiles = {}
 argc = 1 #for all the directories to go into
-if(argc == len(sys.argv)):
+if(argc == len(sys.argv)):#If this program gets no directories to use it immediately exits
     print("Please include files to parse")
     exit()
 while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reader.
     count = 1 #Due to naming conventions all chapters of books will be source/[bookname]/[bookname]-[chapter number]
-    filepath = "source/"+sys.argv[argc]#NOTE:
-    if(os.path.exists(filepath)):
+    filepath = "source/"+sys.argv[argc]#NOTE: you should enter the directory you have the files you want to parse inside
+    if(os.path.exists(filepath)):      #      the directory should contained numbered pdf files with the same name as the directory
         key = sys.argv[argc]+"-"+(str)(count)
         path = filepath+"/"+key+".pdf"
         while(os.path.exists(path)):
             f = open(path, 'rb')
             rawText = readText(PyPDF2.PdfFileReader(f))
-            rawFiles[key] = rawText
+            rawFiles[key] = rawText #Reads in the text then puts it in a dictionary with a lable of the filename.
             count+=1
             key = sys.argv[argc]+"-"+(str)(count)
             path = filepath+"/"+key+".pdf"
@@ -210,12 +204,15 @@ while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reade
     argc+=1
 
 print("--- %s loading files time seconds ---" % (time.time() - start_time))
+
+
 process_queue = []
-for key in rawFiles:
+for key in rawFiles: #performs all the semantic actions in sequence
     p = multiprocessing.Process(target=semanticActions, args=(key, rawFiles[key], ))
     p.start()
     process_queue.append(p)
 
+#makes sure all the processes started above are killed before finishing the program.
 for proc in process_queue:
     proc.join()
 
