@@ -38,7 +38,7 @@ def buildRelations(f):
     relation_dic = {}
 
     for word in freq_set:
-        if freq_set[word] > 9:#Remove anything that's not mentioned that much
+        if freq_set[word] > 1:#Remove anything that's not mentioned that much
             relation_dic[word] = Relation(filename, word, freq_set[word])
 
     return relation_dic
@@ -62,18 +62,19 @@ def computeWeight(v1, v2):
     holder = v1 - v2
     if holder < 0:
         holder = -holder
-    holder = (v1 - holder)/2
+    holder = (v1 - holder)
     return holder
 
 
-file1 = open("testkey.txt", "r")
-file2 = open("testwrite.txt", "r")
+file1 = open("source/ECrelationtest.txt", "r")
+file2 = open("source/HSrelationtest.txt", "r")
 
 rel_arr1 = buildRelations(file1)
-file1 = open("testkey.txt", "r")
-rel_arr3 = buildRelations(file1)
+rel_arr2 = buildRelations(file2)
 
-weight_db = compareRelations(rel_arr1, rel_arr3)
+
+
+weight_db = compareRelations(rel_arr1, rel_arr2)
 
 for key in weight_db:
     print(key+": source "+weight_db[key].source+", weight "+ (str)(weight_db[key].weight)+"\n___________")
