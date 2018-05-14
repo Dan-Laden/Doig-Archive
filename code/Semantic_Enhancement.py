@@ -29,7 +29,6 @@ stoplist = set(stopwords.words('english'))#set of all stopwords in english thank
 
 #Main function that executes all the functions before for parsing, dividing, and serving up enriched text.
 def semanticActions(key, text):
-    print("--- %s key time seconds ---" % (time.time() - start_time))
     tokens = POStagging(text)
     keywords = keywordGenerator(tokens)
     places = multiwordPlace(tokens)
@@ -134,14 +133,14 @@ def geoServer(listPlaces):
     geolocations = []
     queue = multiprocessing.Queue()
     for loc in listPlaces:
-        #p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue, geolocator))
-        #p.start()
-        geolocations.append(Geothing())#For now this has a placeholder class till XXX usage of this API is resolved
+        p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue, geolocator))
+        p.start()
+        #geolocations.append(Geothing())#For now this has a placeholder class till XXX usage of this API is resolved
 
-    time.sleep(30)#Wait till everything finishes
+    time.sleep(50)#Wait till everything finishes
 
-    #while not queue.empty():
-    #    geolocations.append(queue.get_nowait())
+    while not queue.empty():
+        geolocations.append(queue.get_nowait())
     return geolocations
 
 #This takes a list and converts is into a string
