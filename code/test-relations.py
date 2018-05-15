@@ -74,6 +74,9 @@ def fillDB(d1):
     connection = sqlite3.connect("relation.db")
     cursor = connection.cursor()
 
+    #For cleaning the database for testing
+    cursor.execute("""DROP TABLE employee;""")
+
     for key in d1:
         sql_addto = """INSERT INTO relations (SourceFile, Keyword, RelatedFile, Weight)
         VALUES ('{0}', '{1}', '{2}', '{3}');""".format(d1[key].source, d1[key].keyword, d1[key].related, d1[key].weight)
