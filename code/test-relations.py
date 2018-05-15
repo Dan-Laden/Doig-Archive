@@ -8,6 +8,7 @@ import time
 start_time = time.time()
 
 import os
+import sqlite3
 from nltk  import FreqDist
 
 #This class is meant to hold three things rather than having these in a list in the dictionaries
@@ -21,10 +22,14 @@ class Relation:
 
 #Much like the class above this was made to avoid using lists inside of dictionaries
 #Source is the file that has the same keyword as the file we're looking at
+#Keyword is the specific keyword being related between Source and Related
+#Related is the file that has a connection to Source by keyword
 #Weight is calculated by computeWeight but it's how strong that relation is
-class Weight:
-    def __init__(self, inSource, inWeight):
+class ConnectedRelation:
+    def __init__(self, inSource, inKeyword, inRelated, inWeight):
         self.source = inSource
+        self.keyword = inKeyword
+        self.related = inRelated
         self.weight = inWeight
 
 #This function builds a dictionary of relations using a dictionary {keyword: Relation Datastructure}
@@ -52,7 +57,7 @@ def compareRelations(d1, d2):
         for key2 in d2:
             if key1 == key2:
                 tag = d1[key1].source + "-" + key1
-                relation_sql[tag] = Weight(d2[key2].source, computeWeight(d1[key1].occurrences, d2[key2].occurrences))
+                relation_sql[tag] = ConnectedRelation(d1[key1].source, key1, d2[key2].source, computeWeight(d1[key1].occurrences, d2[key2].occurrences))
 
     return relation_sql
 
@@ -65,6 +70,20 @@ def computeWeight(v1, v2):
     holder = (v1 - holder)
     return holder
 
+def fillDB(d1):
+    connection = sqlite3.connect("relation.db")
+    cursor = connection.cursor()
+
+    for key in d1:
+        sql_addto = """INSERT INTO relations (SourceFile, Keyword, RelatedFile, Weight)
+        VALUES ('{0}', '{1}', '{2}', '{3}');""".format(d1[key].source, d1[key].keyword, d1[key].related, d1[key].weight)
+        print(sql_addto)
+        cursor.execute(sql_addto)
+
+    # necessary for saving changes made
+    connection.commit()
+
+    connection.close()
 
 file1 = open("source/ECrelationtest.txt", "r")
 file2 = open("source/HSrelationtest.txt", "r")
@@ -72,18 +91,16 @@ file2 = open("source/HSrelationtest.txt", "r")
 rel_arr1 = buildRelations(file1)
 rel_arr2 = buildRelations(file2)
 
+related_db = compareRelations(rel_arr1, rel_arr2)
 
-
-weight_db = compareRelations(rel_arr1, rel_arr2)
-
-for key in weight_db:
-    print(key+": source "+weight_db[key].source+", weight "+ (str)(weight_db[key].weight)+"\n___________")
-
-#print(rel_arr[4].source + ", " + rel_arr[4].keyword + ", " + (str)(rel_arr[4].occurrences))
+fillDB(related_db)
 
 print("--- %s seconds ---" % (time.time() - start_time))
 #########################
 #resources used for code so far
 #
 # https://stackoverflow.com/questions/323515/how-to-get-the-name-of-an-open-file
+# https://www.python-course.eu/sql_python.php
+# https://stackoverflow.com/questions/4709310/python-string-formatting-reference-one-argument-multiple-times
+# https://stackoverflow.com/questions/47458189/sqlite3-operationalerror-no-such-column-but-im-not-asking-for-a-column
 #########################
