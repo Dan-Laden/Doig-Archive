@@ -4,12 +4,15 @@
   $item = "ECrelationtest.txt"; #Look into routing for changing what is actually going on in the url
   $sql=<<<SQL
     SELECT Keyword from relations
-    WHERE SourceFile='$item';
+    WHERE SourceFile='$item'
+    ORDER BY Weight;
 SQL;
   $rows = $db->query($sql);
+  $keywords = array();
   foreach ($rows as $row) {
-    #var_dump($row);
+    array_push($keywords, $row['Keyword']);
   }
+  var_dump($keywords)
 
 ?>
 
@@ -109,12 +112,12 @@ SQL;
             <li><p class="metadata-keywords">
               <strong>Keywords </strong>
               <span class="metadata-field" property="name">
-                <a href="relation-page.php?[variable name]=value">Father</a>;
-                <a href="relation-page.php">Jenny</a>;
-                <a href="relation-page.php">Forrest</a>;
-                <a href="relation-page.php">Abe</a>;
-                <a href="relation-page.php">Chris</a>;
-                <a href="relation-page.php">Dog</a>
+                <?php
+                for ($i=0; $i < 10 ; $i++) {
+                  $url = "relation-page.php?keyword=".$keywords[$i];
+                  echo("<a href=$url>$keywords[$i]</a>; ");
+                }
+                ?>
               </span>
             </p></li>
 
