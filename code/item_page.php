@@ -153,3 +153,5 @@ SQL;
 </html>
 
 <!--https://stackoverflow.com/questions/15481911/linking-to-a-specific-part-of-a-web-page -->
+<!--https://stackoverflow.com/questions/5456626/php-pdo-returning-single-row-->
+<!--https://stackoverflow.com/questions/5956610/how-to-select-first-10-words-of-a-sentence-->
