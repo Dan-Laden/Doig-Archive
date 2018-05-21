@@ -19,6 +19,7 @@ import difflib #Library that can compare differences in strings ref doc: https:/
 import multiprocessing #ref doc: https://docs.python.org/3.6/library/multiprocessing.html
 import sys #ref doc: https://docs.python.org/3.6/library/sys.html
 import os #ref doc: https://docs.python.org/3.6/library/os.html
+import sqlite3 #ref doc: https://docs.python.org/3/library/sqlite3.html
 import errno #ref doc: https://docs.python.org/3.6/library/errno.html
 from geopy.geocoders import GeoNames #ref doc: http://geopy.readthedocs.io/en/stable/#
 
@@ -28,12 +29,12 @@ stoplist = set(stopwords.words('english'))#set of all stopwords in english thank
 #Main functions for data parsing
 
 #Main function that executes all the functions before for parsing, dividing, and serving up enriched text.
-def semanticActions(key, text):
+def semanticActions(key, text, pages, source):
     tokens = POStagging(text)
     keywords = keywordGenerator(tokens)
     places = multiwordPlace(tokens)
     geoplaces = geoServer(places)
-    output(key, text, keywords, geoplaces)
+    output(key, text, keywords, geoplaces, pages, source)
 
 #This function reads in text from a pdf and returns it without punctuation
 def readText(pdfR):
@@ -84,9 +85,20 @@ def keywordGenerator(POStext):
     return (keywordsNN, keywordsVB)
 
 #This function outputs two text files of rich text for additional sourcing
-def output(filename, rawtext, keywordlist, geolocations):
+def output(filename, rawtext, keywordlist, geolocations, pages, source):
     #write general text to a .txt file
     filetypes = ["Raw", "Keywords", "Geolocations"]
+
+
+    keywords = ""
+    for keywords in keywordlist:
+        for key in keywords:
+            keywords = keywords + key + "; "
+    geolocations = ""
+    for geoloc in geolocations:
+        geolocations = geolocations + geoloc + "; "
+
+
     for types in filetypes:
         path = "output/"+filename[:(len(filename))-2]+"/"+types+"/"+types+"-"+filename+".txt"
         makedir(path)
@@ -95,14 +107,39 @@ def output(filename, rawtext, keywordlist, geolocations):
         if(types == "Raw"):
             f.write(rawtext)
         elif(types == "Keywords"):
-            for keywords in keywordlist:
-                for key in keywords:
-                    f.write(key+"; ")
+            f.write(keywords)
         else:
-            for geoloc in geolocations:
-                f.write(geoloc.address+"; ")
+            f.write(geolocations)
 
         f.close()
+
+    fillItemDB(Item(filename, rawtext, keywords, pages, source, geolocations, (filename+".png")))
+
+def fillItemDB(item):
+    connection = sqlite3.connect("item.db")
+    cursor = connection.cursor()
+
+    #For cleaning the database for testing
+    cursor.execute("""DROP TABLE employee;""")
+
+    sql_addto = """INSERT INTO ITEMS (ID, Raw-Text, Keyword, Pages Related-Book, Geolocation, Img)
+    VALUES ('{0}', '{1}', '{2}', '{3}', '{4}'. '{5}', '{6}');""".format(item.ID, item.rawText, item.keywords, item.pages, item.relatedBook, item.geolocations, item.img)
+    cursor.execute(sql_addto)
+
+    # necessary for saving changes made
+    connection.commit()
+
+    connection.close()
+
+class Item:#For database usage
+    def __init__(self, inID, inRawText, inKeywords, inPages, inRelatedBook, inGeolocations, inImg):
+        self.ID = inID
+        self.rawText = inRawText
+        self.keywords = inKeywords
+        self.pages = inPages
+        self.relatedBook = inRelatedBook
+        self.geolocations = inGeolocations
+        self.img = inImg
 
 #This function creates a list of compound places to iterate through for locational checking.
 #Creates two or more string tokens
@@ -190,8 +227,10 @@ while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reade
         path = filepath+"/"+key+".pdf"
         while(os.path.exists(path)):
             f = open(path, 'rb')
-            rawText = readText(PyPDF2.PdfFileReader(f))
-            rawFiles[key] = rawText #Reads in the text then puts it in a dictionary with a lable of the filename.
+            pdf = PyPDF2.PdfFileReader(f)
+            pages = pdf.getNumPages()
+            rawText = readText(pdf)
+            rawFiles[key] = (rawText, pages, sys.argv[argc]) #Reads in the text then puts it in a dictionary with a lable of the filename.
             count+=1
             key = sys.argv[argc]+"-"+(str)(count)
             path = filepath+"/"+key+".pdf"
@@ -207,7 +246,7 @@ print("--- %s loading files time seconds ---" % (time.time() - start_time))
 
 process_queue = []
 for key in rawFiles: #performs all the semantic actions in sequence
-    p = multiprocessing.Process(target=semanticActions, args=(key, rawFiles[key], ))
+    p = multiprocessing.Process(target=semanticActions, args=(key, rawFiles[key][0],rawFiles[key][1], rawFiles[key][2], ))
     p.start()
     process_queue.append(p)
 
