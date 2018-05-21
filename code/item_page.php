@@ -12,6 +12,7 @@ SQL;
   $text = implode(' ', array_slice(explode(' ', $row["Raw-Text"]), 0, 50));
   $length = $row["Pages"];
   $book = $row["Related-Book"];
+  $img = $row["Img"];
   $geoloc = explode("; ", $row["Geolocations"]);
 ?>
 
@@ -42,8 +43,9 @@ SQL;
 
         <!-- This div contains a picture of the item along with it's designated name -->
         <div id="Item-Picture">
-          <?php echo("<h1>$item</h1>"); ?>
-          <img src="img/book.jpg" alt="A book by Ivan Doig">
+          <?php echo("<h1>$item</h1>");
+          echo("<img src=$img alt='A book by Ivan Doig'>");
+          ?>
         </div>
         <!--                                                                         -->
 
