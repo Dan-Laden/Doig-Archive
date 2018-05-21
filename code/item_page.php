@@ -1,19 +1,18 @@
 <?php
-  $dir = 'sqlite:relation.db';
+  $dir = 'sqlite:items.db';
   $db  = new PDO($dir) or die("Database 404: Error code 4060");
-  $item = "ECrelationtest.txt"; #Look into routing for changing what is actually going on in the url
+  $item = "This House of Sky, Chapter 4"; #Look into routing for changing what is actually going on in the url
   $sql=<<<SQL
-    SELECT Keyword from relations
-    WHERE SourceFile='$item'
-    ORDER BY Weight;
+    SELECT * from ITEMS
+    WHERE ID='$item';
 SQL;
   $rows = $db->query($sql);
-  $keywords = array();
-  foreach ($rows as $row) {
-    array_push($keywords, $row['Keyword']);
-  }
-  var_dump($keywords)
-
+  $row = $rows->fetch();
+  $keywords = explode("; ", $row["Keywords"]);
+  $text = implode(' ', array_slice(explode(' ', $row["Raw-Text"]), 0, 50));
+  $length = $row["Pages"];
+  $book = $row["Related-Book"];
+  $geoloc = explode("; ", $row["Geolocations"]);
 ?>
 
 <!DOCTYPE html>
@@ -43,7 +42,7 @@ SQL;
 
         <!-- This div contains a picture of the item along with it's designated name -->
         <div id="Item-Picture">
-          <h1>Chapter N, Book That</h1>
+          <?php echo("<h1>$item</h1>"); ?>
           <img src="img/book.jpg" alt="A book by Ivan Doig">
         </div>
         <!--                                                                         -->
@@ -54,18 +53,13 @@ SQL;
             <!-- The Title -->
             <li><p class="metadata-title">
               <strong>Title </strong>
-              <span class="metadata-field" property="name">
-                This House of Sky
-              </span>
+                <?php echo("<span class='metadata-field' property='name'>$item</span>"); ?>
             </p></li>
 
             <!-- The abstract -->
-            <li><p class="metadata-abstract">
-              <strong>Abstract </strong>
-              <span class="metadata-field" property="name">
-                Lorem ipsum ornare ac feugiat libero lacinia sed, laoreet potenti egestas nisi dolor netus tortor, rhoncus nunc proin sem pretium placerat morbi habitant tempor feugiat faucibus enim.
-                Himenaeos bibendum class ege
-              </span>
+            <li><p class="metadata-abstract"><?php #TODO TODO TODO ?>
+              <strong>Raw Text Example </strong>
+              <?php echo("<span class='metadata-field' property='name'>$text</span>"); ?>
             </p></li>
 
             <!-- The genre the item falls into -->
@@ -79,9 +73,7 @@ SQL;
             <!-- The page length of the document -->
             <li><p class="metadata-length">
               <strong>Length </strong>
-              <span class="metadata-field" property="name">
-                135 pages
-              </span>
+              <?php echo("<span class='metadata-field' property='name'>$length</span>"); ?>
             </p></li>
 
             <!-- The unique item id -->
@@ -103,9 +95,7 @@ SQL;
             <!-- The book this chapter comes from -->
             <li><p class="metadata-book">
               <strong>Related Book </strong>
-              <span class="metadata-field" property="name">
-                This House of Sky
-              </span>
+              <?php echo("<span class='metadata-field' property='name'>$book</span>"); ?>
             </p></li>
 
             <!-- The keywords of the document from python -->
@@ -113,7 +103,7 @@ SQL;
               <strong>Keywords </strong>
               <span class="metadata-field" property="name">
                 <?php
-                for ($i=0; $i < 10 ; $i++) {
+                for ($i=0; $i < 20 ; $i++) {
                   $url = "relation-page.php?keyword=".$keywords[$i];
                   echo("<a href=$url>$keywords[$i]</a>; ");
                 }
@@ -125,7 +115,12 @@ SQL;
             <li><p class="metadata-geolocations">
               <strong>Geolocations </strong>
               <span class="metadata-field" property="name">
-                Bridger, MT, US; Bozeman, MT, US; Dillon, MT, US
+                <?php
+                for ($i=0; $i < 10 ; $i++) {
+                  $url = "relation-page.php?keyword=".$geoloc[$i];
+                  echo("<a href=$url>$geoloc[$i]</a>; ");
+                }
+                ?>
               </span>
             </p></li>
           </ul>
