@@ -7,8 +7,8 @@ print("Test File")#This is only a test files this shouldn't be used for producti
 import time
 start_time = time.time()
 
-import os
-import sqlite3
+import os #ref doc: https://docs.python.org/3.6/library/os.html
+import sqlite3 # ref doc: https://docs.python.org/3/library/sqlite3.html
 from nltk  import FreqDist
 
 #This class is meant to hold three things rather than having these in a list in the dictionaries
