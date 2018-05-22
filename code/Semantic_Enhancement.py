@@ -29,12 +29,12 @@ stoplist = set(stopwords.words('english'))#set of all stopwords in english thank
 #Main functions for data parsing
 
 #Main function that executes all the functions before for parsing, dividing, and serving up enriched text.
-def semanticActions(key, text, pages, source):
+def semanticActions(key, text, pages, source, queue):
     tokens = POStagging(text)
     keywords = keywordGenerator(tokens)
     places = multiwordPlace(tokens)
     geoplaces = geoServer(places)
-    output(key, text, keywords, geoplaces, pages, source)
+    output(key, text, keywords, geoplaces, pages, source, queue)
 
 #This function reads in text from a pdf and returns it without punctuation
 def readText(pdfR):
@@ -85,7 +85,7 @@ def keywordGenerator(POStext):
     return (keywordsNN, keywordsVB)
 
 #This function outputs two text files of rich text for additional sourcing
-def output(filename, rawtext, keywordlist, geolocations, pages, source):
+def output(filename, rawtext, keywordlist, geolocations, pages, source, queue):
     #write general text to a .txt file
     filetypes = ["Raw", "Keywords", "Geolocations"]
 
@@ -113,7 +113,7 @@ def output(filename, rawtext, keywordlist, geolocations, pages, source):
 
         f.close()
 
-    fillItemDB(Item(filename, rawtext, keywords, pages, source, geolocations, (filename+".png")))
+    queue.put(Item(filename, rawtext, keywords, pages, source, geolocations, (filename+".png")))
 
 def fillItemDB(item):
     connection = sqlite3.connect("item.db")
@@ -168,13 +168,17 @@ def geoServer(listPlaces):
     #Using Geopy for geolocations
     geolocator = GeoNames(username="dan_laden")
     geolocations = []
+    process_queue = []
     queue = multiprocessing.Queue()
     for loc in listPlaces:
         p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue, geolocator))
         p.start()
+        process_queue.append(p)
         #geolocations.append(Geothing())#For now this has a placeholder class till XXX usage of this API is resolved
 
-    time.sleep(50)#Wait till everything finishes
+    #makes sure all the processes started above are killed before finishing the program.
+    for proc in process_queue:
+        proc.join()
 
     while not queue.empty():
         geolocations.append(queue.get_nowait())
@@ -245,14 +249,18 @@ print("--- %s loading files time seconds ---" % (time.time() - start_time))
 
 
 process_queue = []
+queue = multiprocessing.Queue()
 for key in rawFiles: #performs all the semantic actions in sequence
-    p = multiprocessing.Process(target=semanticActions, args=(key, rawFiles[key][0],rawFiles[key][1], rawFiles[key][2], ))
+    p = multiprocessing.Process(target=semanticActions, args=(key, rawFiles[key][0],rawFiles[key][1], rawFiles[key][2], queue,  ))
     p.start()
     process_queue.append(p)
 
 #makes sure all the processes started above are killed before finishing the program.
 for proc in process_queue:
     proc.join()
+
+while not queue.empty():
+    fillItemDB(queue.get_nowait())
 
 #End of main code
 #########################
