@@ -90,10 +90,10 @@ def output(filename, rawtext, keywordlist, geolocations, pages, source, queue):
     filetypes = ["Raw", "Keywords", "Geolocations"]
 
 
-    keywords = ""
+    keywordlist = ""
     for keywords in keywordlist:
         for key in keywords:
-            keywords = keywords + key + "; "
+            keywordlist = keywordlist + key + "; "
     geolocations = ""
     for geoloc in geolocations:
         geolocations = geolocations + geoloc + "; "
@@ -107,20 +107,19 @@ def output(filename, rawtext, keywordlist, geolocations, pages, source, queue):
         if(types == "Raw"):
             f.write(rawtext)
         elif(types == "Keywords"):
-            f.write(keywords)
+            f.write(keywordlist)
         else:
             f.write(geolocations)
 
         f.close()
 
-    queue.put(Item(filename, rawtext, keywords, pages, source, geolocations, (filename+".png")))
+    print("Output for "+filename+" finished")
+
+    queue.put(Item(filename, rawtext, keywordlist, pages, source, geolocations, (filename+".png")))
 
 def fillItemDB(item):
-    connection = sqlite3.connect("item.db")
+    connection = sqlite3.connect("items.db")
     cursor = connection.cursor()
-
-    #For cleaning the database for testing
-    cursor.execute("""DROP TABLE employee;""")
 
     sql_addto = """INSERT INTO ITEMS (ID, Raw-Text, Keyword, Pages Related-Book, Geolocation, Img)
     VALUES ('{0}', '{1}', '{2}', '{3}', '{4}'. '{5}', '{6}');""".format(item.ID, item.rawText, item.keywords, item.pages, item.relatedBook, item.geolocations, item.img)
@@ -130,6 +129,19 @@ def fillItemDB(item):
     connection.commit()
 
     connection.close()
+
+def clearItemDB():
+    connection = sqlite3.connect("items.db")
+    cursor = connection.cursor()
+
+    #For cleaning the database for testing
+    #cursor.execute("""DROP TABLE ITEMS;""")
+
+    # necessary for saving changes made
+    connection.commit()
+
+    connection.close()
+
 
 class Item:#For database usage
     def __init__(self, inID, inRawText, inKeywords, inPages, inRelatedBook, inGeolocations, inImg):
@@ -171,14 +183,15 @@ def geoServer(listPlaces):
     process_queue = []
     queue = multiprocessing.Queue()
     for loc in listPlaces:
-        p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue, geolocator))
-        p.start()
-        process_queue.append(p)
-        #geolocations.append(Geothing())#For now this has a placeholder class till XXX usage of this API is resolved
+        #p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue, geolocator))
+        #p.start()
+        #process_queue.append(p)
+        geolocations.append(Geothing())#For now this has a placeholder class till XXX usage of this API is resolved
 
+    time.sleep(100)
     #makes sure all the processes started above are killed before finishing the program.
-    for proc in process_queue:
-        proc.join()
+    #for proc in process_queue:
+    #    proc.join()
 
     while not queue.empty():
         geolocations.append(queue.get_nowait())
@@ -255,13 +268,16 @@ for key in rawFiles: #performs all the semantic actions in sequence
     p.start()
     process_queue.append(p)
 
+time.sleep(300)
 #makes sure all the processes started above are killed before finishing the program.
-for proc in process_queue:
-    proc.join()
 
+print("--- %s seconds to parse all files---" % (time.time() - start_time))
+
+clearItemDB()
 while not queue.empty():
     fillItemDB(queue.get_nowait())
 
+print("--- %s seconds to load all information in the databases ---" % (time.time() - start_time))
 #End of main code
 #########################
 
