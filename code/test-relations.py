@@ -75,7 +75,7 @@ def fillDB(d1):
     cursor = connection.cursor()
 
     #For cleaning the database for testing
-    cursor.execute("""DROP TABLE employee;""")
+    cursor.execute("""DELETE FROM relations;""")
 
     for key in d1:
         sql_addto = """INSERT INTO relations (SourceFile, Keyword, RelatedFile, Weight)
