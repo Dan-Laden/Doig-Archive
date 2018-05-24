@@ -325,4 +325,5 @@ print("--- %s seconds ---" % (time.time() - start_time))
 # https://stackoverflow.com/questions/34584629/regex-for-catching-only-upper-case-matches/34584693
 # https://stackoverflow.com/questions/12517451/automatically-creating-directories-with-file-output
 # https://stackoverflow.com/questions/1559125/string-arguments-in-python-multiprocessing #XXX stupidest error yet
+# https://stackoverflow.com/questions/33152171/why-does-multiprocessing-process-join-hang #XXX this was related to the multiprocessing .join() errors.
 #########################
