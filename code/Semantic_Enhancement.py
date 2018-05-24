@@ -35,6 +35,7 @@ def semanticActions(key, text, pages, source, queue):
     places = multiwordPlace(tokens)
     geoplaces = geoServer(places)
     output(key, text, keywords, geoplaces, pages, source, queue)
+    return
 
 #This function reads in text from a pdf and returns it without punctuation
 def readText(pdfR):
@@ -113,16 +114,16 @@ def output(filename, rawtext, keywordlist, geolocations, pages, source, queue):
 
         f.close()
 
-    print("Output for "+filename+" finished")
-
     queue.put(Item(filename, rawtext, keywordlist, pages, source, geolocations, (filename+".png")))
+    print("Output for "+filename+" finished")
+    return
 
 def fillItemDB(item):
     connection = sqlite3.connect("items.db")
     cursor = connection.cursor()
 
-    sql_addto = """INSERT INTO ITEMS (ID, Raw-Text, Keyword, Pages Related-Book, Geolocation, Img)
-    VALUES ('{0}', '{1}', '{2}', '{3}', '{4}'. '{5}', '{6}');""".format(item.ID, item.rawText, item.keywords, item.pages, item.relatedBook, item.geolocations, item.img)
+    sql_addto = """INSERT INTO ITEMS (ID, RawText, Keyword, Pages, RelatedBook, Geolocation, Img)
+    VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}');""".format(item.ID, item.rawText, item.keywords, item.pages, item.relatedBook, item.geolocations, item.img)
     cursor.execute(sql_addto)
 
     # necessary for saving changes made
@@ -135,7 +136,7 @@ def clearItemDB():
     cursor = connection.cursor()
 
     #For cleaning the database for testing
-    #cursor.execute("""DROP TABLE ITEMS;""")
+    cursor.execute("""DELETE FROM ITEMS;""")
 
     # necessary for saving changes made
     connection.commit()
@@ -176,11 +177,14 @@ class Geothing:#For testing
         self.address = "placeholder"
 
 #This function takes in a list of places and tries it's best to locate what is possibly a match
+
 def geoServer(listPlaces):
     #Using Geopy for geolocations
     geolocator = GeoNames(username="dan_laden")
     geolocations = []
     process_queue = []
+    global numOfPlaces
+    numOfPlaces = 0
     queue = multiprocessing.Queue()
     for loc in listPlaces:
         #p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue, geolocator))
@@ -188,13 +192,19 @@ def geoServer(listPlaces):
         #process_queue.append(p)
         geolocations.append(Geothing())#For now this has a placeholder class till XXX usage of this API is resolved
 
-    time.sleep(100)
     #makes sure all the processes started above are killed before finishing the program.
-    #for proc in process_queue:
-    #    proc.join()
+    time.sleep(30)
+    while numOfPlaces > 0:#wait
+        if queue.empty():
+            print("Nothing in queue")
+            time.sleep(0.1)
+        else:
+            geolocations.append(queue.get())
+            numOfPlaces-=1
 
-    while not queue.empty():
-        geolocations.append(queue.get_nowait())
+    for proc in process_queue:
+        proc.terminate()
+
     return geolocations
 
 #This takes a list and converts is into a string
@@ -215,6 +225,7 @@ def geoLocate(location, queue, geoloc):
             geo = geoloc.geocode(locMT, timeout=20)
         if not geo == None and "MT" in geo.address:
             queue.put(geo)
+            numOfPlaces+=1
 
 
 #NOTE: not my code this is from: https://stackoverflow.com/a/12517490/8967976
@@ -231,6 +242,7 @@ def makedir(path):
 
 #########################
 # NOTE Start of main code
+numOfFiles = 0
 rawFiles = {}
 argc = 1 #for all the directories to go into
 if(argc == len(sys.argv)):#If this program gets no directories to use it immediately exits
@@ -249,6 +261,7 @@ while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reade
             rawText = readText(pdf)
             rawFiles[key] = (rawText, pages, sys.argv[argc]) #Reads in the text then puts it in a dictionary with a lable of the filename.
             count+=1
+            numOfFiles+=1
             key = sys.argv[argc]+"-"+(str)(count)
             path = filepath+"/"+key+".pdf"
 
@@ -262,20 +275,37 @@ print("--- %s loading files time seconds ---" % (time.time() - start_time))
 
 
 process_queue = []
-queue = multiprocessing.Queue()
+itemQueue = multiprocessing.Queue()
 for key in rawFiles: #performs all the semantic actions in sequence
-    p = multiprocessing.Process(target=semanticActions, args=(key, rawFiles[key][0],rawFiles[key][1], rawFiles[key][2], queue,  ))
+    p = multiprocessing.Process(target=semanticActions, args=(key, rawFiles[key][0],rawFiles[key][1], rawFiles[key][2], itemQueue,  ))
     p.start()
     process_queue.append(p)
 
-time.sleep(300)
-#makes sure all the processes started above are killed before finishing the program.
 
+#while loop the queue size till it equals how many parsed in files? no using .join() just wait till all information gets moved into the Queue then
+#terminated all threads
 print("--- %s seconds to parse all files---" % (time.time() - start_time))
 
+
+time.sleep(30)
+
 clearItemDB()
-while not queue.empty():
-    fillItemDB(queue.get_nowait())
+while numOfFiles > 0:#wait
+    if itemQueue.empty():
+        print("Nothing in queue")
+        time.sleep(0.1)
+    else:
+        print("Filling DB")
+        fillItemDB(itemQueue.get())
+        numOfFiles-=1
+
+
+
+#makes sure all the processes started above are killed before finishing the program.
+for proc in process_queue:
+    print("terminate loop")
+    proc.terminate()
+
 
 print("--- %s seconds to load all information in the databases ---" % (time.time() - start_time))
 #End of main code
