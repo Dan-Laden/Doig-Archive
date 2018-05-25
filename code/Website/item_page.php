@@ -8,12 +8,12 @@
 SQL;
   $rows = $db->query($sql);
   $row = $rows->fetch();
-  $keywords = explode("; ", $row["Keywords"]);
-  $text = implode(' ', array_slice(explode(' ', $row["Raw-Text"]), 0, 50));
+  $keywords = explode("; ", $row["Keyword"]);
+  $text = implode(' ', array_slice(explode(' ', $row["RawText"]), 0, 50));
   $length = $row["Pages"];
-  $book = $row["Related-Book"];
+  $book = $row["RelatedBook"];
   $img = $row["Img"];
-  $geoloc = explode("; ", $row["Geolocations"]);
+  $geoloc = explode("; ", $row["Geolocation"]);
 ?>
 
 <!DOCTYPE html>
