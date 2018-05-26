@@ -115,9 +115,10 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
         f.close()
 
 
-        
+    #This creates the "Proper" file names to be used in the dynamic pages
+    #filename is the title of the book while source is the related book
     filename = filename.replace("-", " ")
-    digits = re.findall('\d+', filename)
+    digits = re.findall('\d+', filename)#I'm using regular expressions instead of forloops because I think that's faster proformance
     digit = digits[0]
     source = filename.replace((" "+digit), "")
     filename = filename.replace((" "+digit), (", Chapter "+digit))
@@ -144,11 +145,12 @@ def clearItemDB():
     connection = sqlite3.connect("items.db")
     cursor = connection.cursor()
 
+    #For cleaning the database for testing
     try:
-        #For cleaning the database for testing
+
         cursor.execute("""DELETE FROM ITEMS;""")
 
-        # necessary for saving changes made
+    #This  is for if the database is new and a table for the items is needed to be created.
     except sqlite3.OperationalError:
         print("Detect no previous database, one will be made.")
 
@@ -164,6 +166,7 @@ def clearItemDB():
         );"""
         cursor.execute(sql_createtb)
 
+    # necessary for saving changes made
     connection.commit()
 
     connection.close()
@@ -352,4 +355,7 @@ print("--- %s seconds ---" % (time.time() - start_time))
 # https://stackoverflow.com/questions/12517451/automatically-creating-directories-with-file-output
 # https://stackoverflow.com/questions/1559125/string-arguments-in-python-multiprocessing #XXX stupidest error yet
 # https://stackoverflow.com/questions/33152171/why-does-multiprocessing-process-join-hang #XXX this was related to the multiprocessing .join() errors.
+# https://stackoverflow.com/questions/4289331/python-extract-numbers-from-a-string
+# https://www.tutorialspoint.com/python/string_replace.htm
+# https://stackoverflow.com/questions/11520492/difference-between-del-remove-and-pop-on-lists
 #########################
