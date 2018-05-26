@@ -35,7 +35,6 @@ def semanticActions(key, text, pages, source, queue):
     places = multiwordPlace(tokens)
     geoplaces = geoServer(places)
     output(key, text, keywords, geoplaces, pages, source, queue)
-    return
 
 #This function reads in text from a pdf and returns it without punctuation
 def readText(pdfR):
@@ -90,6 +89,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     #write general text to a .txt file
     filetypes = ["Raw", "Keywords", "Geolocations"]
 
+    img = filename+".png"
 
     keywordlist = ""
     for keywords in keylist:
@@ -114,9 +114,18 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
 
         f.close()
 
-    queue.put(Item(filename, rawtext, keywordlist, pages, source, geolocation, (filename+".png")))
+
+        
+    filename = filename.replace("-", " ")
+    digits = re.findall('\d+', filename)
+    digit = digits[0]
+    source = filename.replace((" "+digit), "")
+    filename = filename.replace((" "+digit), (", Chapter "+digit))
+
+
+
+    queue.put(Item(filename, rawtext, keywordlist, pages, source, geolocation, img))
     print("Output for "+filename+" finished")
-    return
 
 def fillItemDB(item):
     connection = sqlite3.connect("items.db")
@@ -196,13 +205,14 @@ class Geothing:#For testing
 
 def geoServer(listPlaces):
     #Using Geopy for geolocations
+    GeoNamesAccounts = ["semantic_1", "semantic_2", "semantic_3", "semantic_4", "semantic_5", "semantic_6"]
     geolocator = GeoNames(username="dan_laden")
     geolocations = []
     process_queue = []
     global numOfPlaces
     numOfPlaces = 0
     queue = multiprocessing.Queue()
-    for loc in listPlaces:
+    for loc in listPlaces: #TODO next change with a list of accounts to login with
         #p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue, geolocator))
         #p.start()
         #process_queue.append(p)
