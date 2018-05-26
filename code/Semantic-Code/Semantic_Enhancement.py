@@ -86,18 +86,18 @@ def keywordGenerator(POStext):
     return (keywordsNN, keywordsVB)
 
 #This function outputs two text files of rich text for additional sourcing
-def output(filename, rawtext, keywordlist, geolocations, pages, source, queue):
+def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     #write general text to a .txt file
     filetypes = ["Raw", "Keywords", "Geolocations"]
 
 
     keywordlist = ""
-    for keywords in keywordlist:
+    for keywords in keylist:
         for key in keywords:
             keywordlist = keywordlist + key + "; "
-    geolocations = ""
+    geolocation = ""
     for geoloc in geolocations:
-        geolocations = geolocations + geoloc + "; "
+        geolocation = geolocation + geoloc.address + "; "
 
 
     for types in filetypes:
@@ -110,11 +110,11 @@ def output(filename, rawtext, keywordlist, geolocations, pages, source, queue):
         elif(types == "Keywords"):
             f.write(keywordlist)
         else:
-            f.write(geolocations)
+            f.write(geolocation)
 
         f.close()
 
-    queue.put(Item(filename, rawtext, keywordlist, pages, source, geolocations, (filename+".png")))
+    queue.put(Item(filename, rawtext, keywordlist, pages, source, geolocation, (filename+".png")))
     print("Output for "+filename+" finished")
     return
 
@@ -135,10 +135,26 @@ def clearItemDB():
     connection = sqlite3.connect("items.db")
     cursor = connection.cursor()
 
-    #For cleaning the database for testing
-    cursor.execute("""DELETE FROM ITEMS;""")
+    try:
+        #For cleaning the database for testing
+        cursor.execute("""DELETE FROM ITEMS;""")
 
-    # necessary for saving changes made
+        # necessary for saving changes made
+    except sqlite3.OperationalError:
+        print("Detect no previous database, one will be made.")
+
+        sql_createtb = """CREATE TABLE `ITEMS` (
+        `ID`	TEXT,
+        `RawText`	TEXT,
+        `Keyword`	TEXT,
+        `Pages`	INTEGER,
+        `RelatedBook`	TEXT,
+        `Geolocation`	TEXT,
+        `Img`	TEXT,
+        PRIMARY KEY(ID)
+        );"""
+        cursor.execute(sql_createtb)
+
     connection.commit()
 
     connection.close()
