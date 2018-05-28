@@ -100,6 +100,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
         geolocation = geolocation + geoloc.address + "; "
 
 
+    #outputs rawtext, keywords, and geolocations to text files
     for types in filetypes:
         path = "output/"+filename[:(len(filename))-2]+"/"+types+"/"+types+"-"+filename+".txt"
         makedir(path)
@@ -123,11 +124,11 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     source = filename.replace((" "+digit), "")
     filename = filename.replace((" "+digit), (", Chapter "+digit))
 
-
-
+    #puts the database item in a queue to be pulled later
     queue.put(Item(filename, rawtext, keywordlist, pages, source, geolocation, img))
     print("Output for "+filename+" finished")
 
+#This method fills the database with a new item from the itemQueue
 def fillItemDB(item):
     connection = sqlite3.connect("items.db")
     cursor = connection.cursor()
@@ -141,6 +142,7 @@ def fillItemDB(item):
 
     connection.close()
 
+#This method cleans the database from previous uses
 def clearItemDB():
     connection = sqlite3.connect("items.db")
     cursor = connection.cursor()
@@ -171,7 +173,7 @@ def clearItemDB():
 
     connection.close()
 
-
+#This is the python object that holds everything for a database entry
 class Item:#For database usage
     def __init__(self, inID, inRawText, inKeywords, inPages, inRelatedBook, inGeolocations, inImg):
         self.ID = inID
@@ -200,7 +202,7 @@ def multiwordPlace(POStext):
 
     return compoundLoc
 
-class Geothing:#For testing
+class Geothing:#For testing until geonames gets sorted out
     def __init__(self):
         self.address = "placeholder"
 
@@ -213,7 +215,7 @@ def geoServer(listPlaces):
     geolocations = []
     process_queue = []
     global numOfPlaces
-    numOfPlaces = 0
+    numOfPlaces = 0 #keeps track of how many places are caught by the geolocator for the queue extraction
     queue = multiprocessing.Queue()
     for loc in listPlaces: #TODO next change with a list of accounts to login with
         #p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue, geolocator))
@@ -271,7 +273,7 @@ def makedir(path):
 
 #########################
 # NOTE Start of main code
-numOfFiles = 0
+numOfFiles = 0 #keeps track of how many files have been loaded in the program
 rawFiles = {}
 argc = 1 #for all the directories to go into
 if(argc == len(sys.argv)):#If this program gets no directories to use it immediately exits
@@ -311,20 +313,14 @@ for key in rawFiles: #performs all the semantic actions in sequence
     process_queue.append(p)
 
 
-#while loop the queue size till it equals how many parsed in files? no using .join() just wait till all information gets moved into the Queue then
-#terminated all threads
-print("--- %s seconds to parse all files---" % (time.time() - start_time))
-
-
-time.sleep(30)
-
 clearItemDB()
+#While the program waits for all files to be processes it will wait in the while and keep taking short sleeps until a file is detected in the itemQueue
 while numOfFiles > 0:#wait
     if itemQueue.empty():
-        print("Nothing in queue")
+        #print("Nothing in queue")
         time.sleep(0.1)
     else:
-        print("Filling DB")
+        #print("Filling DB")
         fillItemDB(itemQueue.get())
         numOfFiles-=1
 
