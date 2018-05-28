@@ -1,7 +1,7 @@
 <?php
   $dir = 'sqlite:items.db';
   $db  = new PDO($dir) or die("Database 404: Error code 4060");
-  $item = "This House of Sky, Chapter 7"; #Look into routing for changing what is actually going on in the url
+  $item = $_GET['item'];
   $sql=<<<SQL
     SELECT * from ITEMS
     WHERE ID='$item';
@@ -102,12 +102,12 @@ SQL;
 
             <!-- The keywords of the document from python -->
             <li><p class="metadata-keywords">
-              <strong>Keywords </strong>
+              <strong>Keywords</strong>
               <span class="metadata-field" property="name">
                 <?php
                 for ($i=0; $i < 20 ; $i++) {
                   $url = "relation-page.php?keyword=".$keywords[$i];
-                  echo("<a href=$url>$keywords[$i]</a>; ");
+                  echo("<a href='$url'>$keywords[$i]</a>; ");
                 }
                 ?>
               </span>
@@ -120,7 +120,7 @@ SQL;
                 <?php
                 for ($i=0; $i < 10 ; $i++) {
                   $url = "relation-page.php?keyword=".$geoloc[$i];
-                  echo("<a href=$url>$geoloc[$i]</a>; ");
+                  echo("<a href='$url'>$geoloc[$i]</a>; ");
                 }
                 ?>
               </span>
