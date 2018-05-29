@@ -9,6 +9,8 @@
     --color-info: #f0f0f0;
 }
 
+ul{list-style-type: none;}
+
 .content__title {
 	font-size: 2rem;
 	margin: 0;
@@ -85,7 +87,7 @@
 	.menu-trigger--close {
 		align-self: center;
 	}
-	
+
 	.grim {
 		display: grid;
 		position: fixed;

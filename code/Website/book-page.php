@@ -3,7 +3,7 @@
   $itemDir = 'sqlite:items.db';
   $bookdb  = new PDO($bookDir) or die("Database 404: Error code 4060");
   $itemdb  = new PDO($itemDir) or die("Database 404: Error code 4060");
-  $book = "This House of Sky"; #Look into routing for changing what is actually going on in the url
+  $book = $_GET['book'];
   $search = "%".$book."%";
   $getBook=<<<SQL
     SELECT * from BOOKS
@@ -34,8 +34,7 @@ SQL;
 <nav>
   <ul>
     <li><a href="index.html">Main</a></li><!-- Goes into the main .html file -->
-    <li><a href="/css/">Book That</a></li><!-- Goes to the item page for the book -->
-    <li><a href="/js/">Chapter List</a></li><!-- Goes to the list of all chapters in the book -->
+    <li class="backli"><a onclick="goBack()">Back</a></li><!-- Goes back to previous page -->
   </ul>
 </nav>
 
@@ -110,3 +109,13 @@ SQL;
   </div>
 </body>
 </html>
+
+<!-- This is built in js for letting the user jump back to their previous page -->
+<script>
+function goBack() {
+    window.history.back();
+}
+</script>
+
+
+<!-- https://stackoverflow.com/questions/871858/php-pass-variable-to-next-page -->

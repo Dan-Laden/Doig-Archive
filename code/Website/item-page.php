@@ -27,8 +27,11 @@ SQL;
 <nav>
   <ul>
     <li><a href="index.html">Main</a></li><!-- Goes into the main .html file -->
-    <li><a href="/css/">Book That</a></li><!-- Goes to the item page for the book -->
-    <li><a href="/js/">Chapter List</a></li><!-- Goes to the list of all chapters in the book -->
+    <?php
+      $url = "book-page.php?book=".$book;
+      echo("<li><a href='$url'>$book</a></li>")
+    ?> <!-- Goes to the item page for the book -->
+    <li><a onclick="goBack()">Back</a></li><!-- Goes back to previous page -->
   </ul>
 </nav>
 
@@ -151,6 +154,14 @@ SQL;
   </div>
 </body>
 </html>
+
+<!-- This is built in js for letting the user jump back to their previous page -->
+<script>
+function goBack() {
+    window.history.back();
+}
+</script>
+
 
 <!--https://stackoverflow.com/questions/15481911/linking-to-a-specific-part-of-a-web-page -->
 <!--https://stackoverflow.com/questions/5456626/php-pdo-returning-single-row-->
