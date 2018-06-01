@@ -5,22 +5,31 @@
   $itemdb  = new PDO($itemDir) or die("Database 404: Error code 4060");
   $book = $_GET['book'];
   $search = "%".$book."%";
+
   $getBook=<<<SQL
     SELECT * from BOOKS
-    WHERE Title='$book';
+    WHERE Title = :book;
 SQL;
-$getChapters=<<<SQL
-  SELECT ID from ITEMS
-  WHERE ID LIKE '$search'
-  ORDER BY length(ID), ID;
+  $getChapters=<<<SQL
+    SELECT ID from ITEMS
+    WHERE ID LIKE '$search'
+    ORDER BY length(ID), ID;
 SQL;
-  $rows = $bookdb->query($getBook);
+
+  #This is for fixing the possibility of sql injections
+  $rows = $bookdb->prepare($getBook);
+  $rows->bindParam(':book', $book);
+  $rows->execute();
+  $rows->setFetchMode(PDO::FETCH_ASSOC);
   $row = $rows->fetch();
+
+  #This grabs all the needed information from the database
   $chapters = $row["Chapters"];
   $length = $row["Pages"];
   $picture = $row["Img"];
   $img = "img/".$picture;
 
+  #This grabs all the chapters the book has
   $rows = $itemdb->query($getChapters);
 ?>
 
@@ -119,4 +128,5 @@ function goBack() {
 </script>
 
 
-<!-- https://stackoverflow.com/questions/871858/php-pass-variable-to-next-page -->
+<!--https://stackoverflow.com/questions/871858/php-pass-variable-to-next-page-->
+<!--https://www.acunetix.com/blog/articles/prevent-sql-injection-vulnerabilities-in-php-applications/-->

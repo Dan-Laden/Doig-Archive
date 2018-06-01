@@ -1,13 +1,21 @@
 <?php
   $dir = 'sqlite:items.db';
-  $db  = new PDO($dir) or die("Database 404: Error code 4060");
+  $itemdb  = new PDO($dir) or die("Database 404: Error code 4060");
   $item = $_GET['item'];
-  $sql=<<<SQL
+
+  $getItem=<<<SQL
     SELECT * from ITEMS
-    WHERE ID='$item';
+    WHERE ID=:item;
 SQL;
-  $rows = $db->query($sql);
+
+  #This is for fixing the possibility of sql injections
+  $rows = $itemdb->prepare($getItem);
+  $rows->bindParam(':item', $item);
+  $rows->execute();
+  $rows->setFetchMode(PDO::FETCH_ASSOC);
   $row = $rows->fetch();
+
+  #This grabs all the needed information from the database
   $keywords = explode("; ", $row["Keyword"]);
   $text = implode(' ', array_slice(explode(' ', $row["RawText"]), 0, 50));
   $length = $row["Pages"];
@@ -165,4 +173,6 @@ function goBack() {
 
 <!--https://stackoverflow.com/questions/15481911/linking-to-a-specific-part-of-a-web-page -->
 <!--https://stackoverflow.com/questions/5456626/php-pdo-returning-single-row-->
+<!--https://stackoverflow.com/questions/871858/php-pass-variable-to-next-page-->
 <!--https://stackoverflow.com/questions/5956610/how-to-select-first-10-words-of-a-sentence-->
+<!--https://www.acunetix.com/blog/articles/prevent-sql-injection-vulnerabilities-in-php-applications/-->
