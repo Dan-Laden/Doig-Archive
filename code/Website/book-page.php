@@ -12,13 +12,14 @@ SQL;
 $getChapters=<<<SQL
   SELECT ID from ITEMS
   WHERE ID LIKE '$search'
-  ORDER BY ID;
+  ORDER BY length(ID), ID;
 SQL;
   $rows = $bookdb->query($getBook);
   $row = $rows->fetch();
   $chapters = $row["Chapters"];
   $length = $row["Pages"];
-  $img = $row["Img"];
+  $picture = $row["Img"];
+  $img = "img/".$picture;
 
   $rows = $itemdb->query($getChapters);
 ?>
