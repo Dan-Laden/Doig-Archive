@@ -3,7 +3,7 @@
 # email@ dthomasladen@gmail.com #
 #################################
 
-print("Test File")#This is only a test files this shouldn't be used for production
+print("Main File")#This is only a test files this shouldn't be used for production
 import time
 start_time = time.time()
 
@@ -21,6 +21,7 @@ import sys #ref doc: https://docs.python.org/3.6/library/sys.html
 import os #ref doc: https://docs.python.org/3.6/library/os.html
 import sqlite3 #ref doc: https://docs.python.org/3/library/sqlite3.html
 import errno #ref doc: https://docs.python.org/3.6/library/errno.html
+import operator #ref doc: https://docs.python.org/3/library/operator.html
 from geopy.geocoders import GeoNames #ref doc: http://geopy.readthedocs.io/en/stable/#
 
 stoplist = set(stopwords.words('english'))#set of all stopwords in english thanks to nltk
@@ -34,6 +35,7 @@ def semanticActions(key, text, pages, source, queue):
     keywords = keywordGenerator(tokens)
     places = multiwordPlace(tokens)
     geoplaces = geoServer(places)
+    quit()
     output(key, text, keywords, geoplaces, pages, source, queue)
 
 #This function reads in text from a pdf and returns it without punctuation
@@ -82,19 +84,26 @@ def keywordGenerator(POStext):
         elif verb.match(token[1]):
             if not(doig.match(token[0])):
                 keywordsVB.append(token[0])
-    return (keywordsNN, keywordsVB)
+    print (KeywordCounter(keywordsNN))
+
+#this creates a frequency dictionary for the number of occurences in the keywordList and returns them ordered by number of occurences
+def KeywordCounter(keywordList):
+    freq = FreqDist(keywordList)
+    print(type(keywordList))
+    sorted_freq = sorted(freq.items(), key=operator.itemgetter(1))
+    return sorted_freq.reverse()
+
 
 #This function outputs two text files of rich text for additional sourcing
 def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     #write general text to a .txt file
     filetypes = ["Raw", "Keywords", "Geolocations"]
 
-    img = filename+".png"
-
     keywordlist = ""
     for keywords in keylist:
         for key in keywords:
-            keywordlist = keywordlist + key + "; "
+            if(key[1]>1):
+                keywordlist = keywordlist + key[0] + "; "
     geolocation = ""
     for geoloc in geolocations:
         geolocation = geolocation + geoloc.address + "; "
@@ -123,6 +132,8 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     digit = digits[0]
     source = filename.replace((" "+digit), "")
     filename = filename.replace((" "+digit), (", Chapter "+digit))
+    img = "img/"+source+"/"+digit+".png"
+    img = img.replace((" "), "-")
 
     #puts the database item in a queue to be pulled later
     queue.put(Item(filename, rawtext, keywordlist, pages, source, geolocation, img))

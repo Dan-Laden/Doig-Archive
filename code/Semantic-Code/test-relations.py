@@ -61,14 +61,16 @@ def compareRelations(d1, d2):
 
     return relation_sql
 
-#This function computes the weight obviously but it does it by taking the difference of value 1 and value 2 subtracting
-#it from the source value (v1) and then dividing it by two. TODO: I might normalize it all to be between 1 and 0
+#This function computes the weight by normalizing the two entered in values
 def computeWeight(v1, v2):
-    holder = v1 - v2
-    if holder < 0:
-        holder = -holder
-    holder = (v1 - holder)
-    return holder
+    R = 0
+    if(v1>v2):
+        R = v2/v1
+    elif(v1<v2):
+        R = v1/v2
+    else:
+        R = 1
+    return R
 
 def fillDB(d1):
     connection = sqlite3.connect("relation.db")
