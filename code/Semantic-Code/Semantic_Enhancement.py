@@ -35,7 +35,6 @@ def semanticActions(key, text, pages, source, queue):
     keywords = keywordGenerator(tokens)
     places = multiwordPlace(tokens)
     geoplaces = geoServer(places)
-    quit()
     output(key, text, keywords, geoplaces, pages, source, queue)
 
 #This function reads in text from a pdf and returns it without punctuation
@@ -84,26 +83,28 @@ def keywordGenerator(POStext):
         elif verb.match(token[1]):
             if not(doig.match(token[0])):
                 keywordsVB.append(token[0])
-    print (KeywordCounter(keywordsNN))
+    return (KeywordCounter(keywordsNN), KeywordCounter(keywordsVB))
 
 #this creates a frequency dictionary for the number of occurences in the keywordList and returns them ordered by number of occurences
 def KeywordCounter(keywordList):
     freq = FreqDist(keywordList)
-    print(type(keywordList))
     sorted_freq = sorted(freq.items(), key=operator.itemgetter(1))
-    return sorted_freq.reverse()
+    sorted_freq.reverse()
+    return sorted_freq
 
 
 #This function outputs two text files of rich text for additional sourcing
 def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     #write general text to a .txt file
     filetypes = ["Raw", "Keywords", "Geolocations"]
+    relationList = []
 
     keywordlist = ""
     for keywords in keylist:
         for key in keywords:
             if(key[1]>1):
                 keywordlist = keywordlist + key[0] + "; "
+                relationList.append(Relation(filename, key[0], key[1]))
     geolocation = ""
     for geoloc in geolocations:
         geolocation = geolocation + geoloc.address + "; "
@@ -136,7 +137,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     img = img.replace((" "), "-")
 
     #puts the database item in a queue to be pulled later
-    queue.put(Item(filename, rawtext, keywordlist, pages, source, geolocation, img))
+    queue.put((Item(filename, rawtext, keywordlist, pages, source, geolocation, img), relationList))
     print("Output for "+filename+" finished")
 
 #This method fills the database with a new item from the itemQueue
@@ -147,6 +148,39 @@ def fillItemDB(item):
     sql_addto = """INSERT INTO ITEMS (ID, RawText, Keyword, Pages, RelatedBook, Geolocation, Img)
     VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}');""".format(item.ID, item.rawText, item.keywords, item.pages, item.relatedBook, item.geolocations, item.img)
     cursor.execute(sql_addto)
+
+    # necessary for saving changes made
+    connection.commit()
+
+    connection.close()
+
+def fillRelationDB(relationList):
+    connection = sqlite3.connect("relation.db")
+    cursor = connection.cursor()
+
+    #For cleaning the database for testing
+    try:
+
+        cursor.execute("""DELETE FROM RELATIONS;""")
+
+    #This  is for if the database is new and a table for the items is needed to be created.
+    except sqlite3.OperationalError:
+        print("Detect no previous database, one will be made.")
+
+        sql_createtb = """CREATE TABLE `RELATIONS` (
+        `SourceFile`	TEXT,
+        `Keyword`	TEXT,
+        `RelatedFile`	TEXT,
+        `Weight`	INTEGER
+        );"""
+        cursor.execute(sql_createtb)
+
+
+
+    for relation in relationList:
+        sql_addto = """INSERT INTO relations (SourceFile, Keyword, RelatedFile, Weight)
+        VALUES ('{0}', '{1}', '{2}', '{3}');""".format(relation.source, relation.keyword, relation.related, relation.weight)
+        cursor.execute(sql_addto)
 
     # necessary for saving changes made
     connection.commit()
@@ -194,6 +228,28 @@ class Item:#For database usage
         self.relatedBook = inRelatedBook
         self.geolocations = inGeolocations
         self.img = inImg
+
+#This class is meant to hold three things rather than having these in a list in the dictionaries
+#source is the file name from where the keyword is found, and occurences are the number of times
+#that keyword shows up in the source
+class Relation:
+    def __init__(self, inSource, inKeyword, inOccurrences):
+        self.source = inSource
+        self.keyword = inKeyword
+        self.occurrences = inOccurrences
+
+
+#Much like the class above this was made to avoid using lists inside of dictionaries
+#Source is the file that has the same keyword as the file we're looking at
+#Keyword is the specific keyword being related between Source and Related
+#Related is the file that has a connection to Source by keyword
+#Weight is calculated by computeWeight but it's how strong that relation is
+class ConnectedRelation:
+    def __init__(self, inSource, inKeyword, inRelated, inWeight):
+        self.source = inSource
+        self.keyword = inKeyword
+        self.related = inRelated
+        self.weight = inWeight
 
 #This function creates a list of compound places to iterate through for locational checking.
 #Creates two or more string tokens
@@ -279,12 +335,48 @@ def makedir(path):
         except OSError as exc: # Guard against race condition
             if exc.errno != errno.EEXIST:
                 raise
+
+#This function computes the weight by normalizing the two entered in values
+def computeWeight(v1, v2):
+    R = 0
+    if(v1>v2):
+        R = v2/v1
+    elif(v1<v2):
+        R = v1/v2
+    else:
+        R = 1
+    return R
+
+def grabRelations(inRelationList, fileName):
+    relationList = []
+    for relation in inRelationList:
+        if fileName == relation.source:
+            relationList.append(relation)
+
+    return relationList
+
+def makeRelations(relationList, nameOfFiles):
+    connectedList = []
+    while(nameOfFiles):
+        source = nameOfFiles.pop()
+
+        source_relations = grabRelations(relationList, source)
+
+        for relation1 in relationList:
+            for relation2 in source_relations:
+                if relation1.source != source and relation1.keyword == relation2.keyword and (relation1.source[0:len(relation1.source)-2] != relation2.source[0:len(relation2.source)-2] or relation1.source[0:len(relation1.source)-3] != relation2.source[0:len(relation2.source)-3]):
+                    connectedList.append(ConnectedRelation(relation2.source, relation2.keyword, relation1.source, computeWeight(relation2.occurrences, relation1.occurrences)))
+
+    return connectedList
+
+
 #End of functions for data parsing
 #########################
 
 #########################
 # NOTE Start of main code
 numOfFiles = 0 #keeps track of how many files have been loaded in the program
+nameOfFiles = []
 rawFiles = {}
 argc = 1 #for all the directories to go into
 if(argc == len(sys.argv)):#If this program gets no directories to use it immediately exits
@@ -295,6 +387,7 @@ while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reade
     filepath = "source/"+sys.argv[argc]#NOTE: you should enter the directory you have the files you want to parse inside
     if(os.path.exists(filepath)):      #      the directory should contained numbered pdf files with the same name as the directory
         key = sys.argv[argc]+"-"+(str)(count)
+        nameOfFiles.append(key)
         path = filepath+"/"+key+".pdf"
         while(os.path.exists(path)):
             f = open(path, 'rb')
@@ -311,6 +404,7 @@ while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reade
     elif(not(os.path.exists(filepath)) and filepath == ("source/"+sys.argv[argc])):
         print(sys.argv[argc]+" is not a valid directory please try again next run")
 
+
     argc+=1
 
 print("--- %s loading files time seconds ---" % (time.time() - start_time))
@@ -325,6 +419,7 @@ for key in rawFiles: #performs all the semantic actions in sequence
 
 
 clearItemDB()
+relationList = []
 #While the program waits for all files to be processes it will wait in the while and keep taking short sleeps until a file is detected in the itemQueue
 while numOfFiles > 0:#wait
     if itemQueue.empty():
@@ -332,18 +427,23 @@ while numOfFiles > 0:#wait
         time.sleep(0.1)
     else:
         #print("Filling DB")
-        fillItemDB(itemQueue.get())
+        item = itemQueue.get()
+        fillItemDB(item[0])
+        relationList = relationList + item[1]
         numOfFiles-=1
-
-
 
 #makes sure all the processes started above are killed before finishing the program.
 for proc in process_queue:
-    print("terminate loop")
+    #print("terminate loop")
     proc.terminate()
-
-
 print("--- %s seconds to load all information in the databases ---" % (time.time() - start_time))
+
+#NOTE start of relation building
+
+fillRelationDB(makeRelations(relationList, nameOfFiles))
+
+print("--- %s seconds to create all relations ---" % (time.time() - start_time))
+
 #End of main code
 #########################
 
