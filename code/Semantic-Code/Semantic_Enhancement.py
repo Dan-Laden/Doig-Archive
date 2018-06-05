@@ -85,7 +85,7 @@ def keywordGenerator(POStext):
                 keywordsVB.append(token[0])
     return (KeywordCounter(keywordsNN), KeywordCounter(keywordsVB))
 
-#this creates a frequency dictionary for the number of occurences in the keywordList and returns them ordered by number of occurences
+#This creates a frequency dictionary for the number of occurences in the keywordList and returns them ordered by number of occurences
 def KeywordCounter(keywordList):
     freq = FreqDist(keywordList)
     sorted_freq = sorted(freq.items(), key=operator.itemgetter(1))
@@ -104,7 +104,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
         for key in keywords:
             if(key[1]>1):
                 keywordlist = keywordlist + key[0] + "; "
-                relationList.append(Relation(filename, key[0], key[1]))
+                relationList.append(Relation(filename, key[0], key[1])) #NOTE where the Relation objects are created
     geolocation = ""
     for geoloc in geolocations:
         geolocation = geolocation + geoloc.address + "; "
@@ -154,13 +154,13 @@ def fillItemDB(item):
 
     connection.close()
 
+#This method fills the database with the relations created in makeRelations
 def fillRelationDB(relationList):
     connection = sqlite3.connect("relation.db")
     cursor = connection.cursor()
 
-    #For cleaning the database for testing
     try:
-
+        #For cleaning the database for testing
         cursor.execute("""DELETE FROM RELATIONS;""")
 
     #This  is for if the database is new and a table for the items is needed to be created.
@@ -174,8 +174,6 @@ def fillRelationDB(relationList):
         `Weight`	INTEGER
         );"""
         cursor.execute(sql_createtb)
-
-
 
     for relation in relationList:
         sql_addto = """INSERT INTO relations (SourceFile, Keyword, RelatedFile, Weight)
@@ -274,7 +272,6 @@ class Geothing:#For testing until geonames gets sorted out
         self.address = "placeholder"
 
 #This function takes in a list of places and tries it's best to locate what is possibly a match
-
 def geoServer(listPlaces):
     #Using Geopy for geolocations
     GeoNamesAccounts = ["semantic_1", "semantic_2", "semantic_3", "semantic_4", "semantic_5", "semantic_6"]
@@ -347,6 +344,7 @@ def computeWeight(v1, v2):
         R = 1
     return R
 
+#This function find the Relation objects with the same source as the passed in fileName
 def grabRelations(inRelationList, fileName):
     relationList = []
     for relation in inRelationList:
@@ -355,15 +353,16 @@ def grabRelations(inRelationList, fileName):
 
     return relationList
 
+#This function takes a list of read in files from the program and creates a "graph" of biconnected ConnectedRelation objects
 def makeRelations(relationList, nameOfFiles):
     connectedList = []
     while(nameOfFiles):
         source = nameOfFiles.pop()
 
-        source_relations = grabRelations(relationList, source)
+        source_relations = grabRelations(relationList, source) #grabs the Relation objects for the source
 
         for relation1 in relationList:
-            for relation2 in source_relations:
+            for relation2 in source_relations: #This if statement needs to check to make sure the keywords are the same, and the relation1 source is not from the same book as the relation2
                 if relation1.source != source and relation1.keyword == relation2.keyword and (relation1.source[0:len(relation1.source)-2] != relation2.source[0:len(relation2.source)-2] or relation1.source[0:len(relation1.source)-3] != relation2.source[0:len(relation2.source)-3]):
                     connectedList.append(ConnectedRelation(relation2.source, relation2.keyword, relation1.source, computeWeight(relation2.occurrences, relation1.occurrences)))
 
@@ -440,7 +439,7 @@ print("--- %s seconds to load all information in the databases ---" % (time.time
 
 #NOTE start of relation building
 
-fillRelationDB(makeRelations(relationList, nameOfFiles))
+fillRelationDB(makeRelations(relationList, nameOfFiles)) #creates the relations and fills a database with those relations
 
 print("--- %s seconds to create all relations ---" % (time.time() - start_time))
 
