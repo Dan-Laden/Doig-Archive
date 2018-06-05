@@ -1,3 +1,6 @@
+<?php
+  $keyword = $_GET['keyword'];
+ ?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,7 +20,7 @@
   <div id="Main">
     main
     <div id="Content">
-      <h1> [Keyword] </h1>
+      <?php echo("<h1>$keyword</h1>");  ?>
       <h4> __________________________________ </h4>
       <div id="Top-Content">
         <h2> Related Items </h2>
