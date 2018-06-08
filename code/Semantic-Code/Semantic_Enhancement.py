@@ -104,7 +104,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
         for key in keywords:
             if(key[1]>1):
                 keywordlist = keywordlist + key[0] + "; "
-                relationList.append(Relation(filename, key[0], key[1])) #NOTE where the Relation objects are created
+                relationList.append(Relation(filename, key[0], key[1], pages)) #NOTE where the Relation objects are created
     geolocation = ""
     for geoloc in geolocations:
         geolocation = geolocation + geoloc.address + "; "
@@ -231,10 +231,11 @@ class Item:#For database usage
 #source is the file name from where the keyword is found, and occurences are the number of times
 #that keyword shows up in the source
 class Relation:
-    def __init__(self, inSource, inKeyword, inOccurrences):
+    def __init__(self, inSource, inKeyword, inOccurrences, inPages):
         self.source = inSource
         self.keyword = inKeyword
         self.occurrences = inOccurrences
+        self.pages = inPages
 
 
 #Much like the class above this was made to avoid using lists inside of dictionaries
@@ -364,7 +365,9 @@ def makeRelations(relationList, nameOfFiles):
         for relation1 in relationList:
             for relation2 in source_relations: #This if statement needs to check to make sure the keywords are the same, and the relation1 source is not from the same book as the relation2
                 if relation1.source != source and relation1.keyword == relation2.keyword and (relation1.source[0:len(relation1.source)-2] != relation2.source[0:len(relation2.source)-2] or relation1.source[0:len(relation1.source)-3] != relation2.source[0:len(relation2.source)-3]):
-                    connectedList.append(ConnectedRelation(relation2.source, relation2.keyword, relation1.source, computeWeight(relation2.occurrences, relation1.occurrences)))
+                    weight1 = relation1.occurrences * (relation1.pages * 0.1)
+                    weight2 = relation2.occurrences * (relation2.pages * 0.1)
+                    connectedList.append(ConnectedRelation(relation2.source, relation2.keyword, relation1.source, computeWeight(weight2, weight1)))
 
     return connectedList
 
