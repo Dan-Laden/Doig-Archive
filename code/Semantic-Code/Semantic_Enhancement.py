@@ -275,7 +275,7 @@ class Geothing:#For testing until geonames gets sorted out
 #This function takes in a list of places and tries it's best to locate what is possibly a match
 def geoServer(listPlaces):
     #Using Geopy for geolocations
-    GeoNamesAccounts = ["semantic_1", "semantic_2", "semantic_3", "semantic_4", "semantic_5", "semantic_6"]
+    GeoNamesAccounts = ["semantic_1", "semantic_2", "semantic_3", "semantic_4", "semantic_5", "semantic_6", "semantic_7", "semantic_8", "semantic_9", "semantic_10", "semantic_11", "semantic_12"]
     geolocator = GeoNames(username="dan_laden")
     geolocations = []
     process_queue = []
