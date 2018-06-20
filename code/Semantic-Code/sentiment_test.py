@@ -7,6 +7,7 @@
 
 
 
+#This function returns the sentiment values for the entered in text
 def sentiment_analysis(example_sentence):
     f=open("NRC-Emotion-Lexicon-Wordlevel-v0.92.txt", 'r')
     active_word = " "
@@ -22,8 +23,10 @@ def sentiment_analysis(example_sentence):
 
     example_sentence = example_sentence.split()
 
+    f.close()
+
     positivity_rating = 0
-    emotions = {"anger" : 0, "disgust" : 0, "fear" : 0, "joy" : 0, "sadness" : 0}
+    emotions = {"fear" : 0,  "anger" : 0, "sadness" : 0, "joy" : 0, "disgust" : 0, "surprise" : 0, "trust" : 0, "anticipation" : 0}
     for word in example_sentence:
         if word in emotion_dictionary:
             #print(word + " : " + (str)(emotion_dictionary[word]))
@@ -32,8 +35,27 @@ def sentiment_analysis(example_sentence):
 
             positivity_rating = positivity_rating + emotion_dictionary[word]["positive"] - emotion_dictionary[word]["negative"]
 
-    print(emotions)
-    print("positive rating : "+(str)(positivity_rating))
+
+    top_emotion = "fear"
+    for emotion in emotions:
+        if(emotions[top_emotion]<emotions[emotion]):
+            top_emotion = emotion
+
+
+    if(positivity_rating>0):
+        tone = "positive"
+    elif(positivity_rating<0):
+        tone = "negative"
+    else:
+        tone = "neutral"
+
+    textural_emotion = tone + " " + top_emotion
+
+
+    print(textural_emotion)
+
+    return textural_emotion
+
 
 
 
@@ -102,6 +124,89 @@ Edit 9-Just to make to clear everything up
 
 5.AND FOR THE 1000TH TIME MY MOTHER CAN NOT KNOW SHE TOOK WEED.ME,MY UNCLE,AND MY DAD ALL DECIDED THAT IS AN AWFUL IDEA.SHE HAS NO IDEA WHAT WEED IS.ALL SHE KNOWS ABOUT IT IS FROM REEFER MADNESS ERA SHIT.IT WILL DEFIANTLY FREAK HER OUT WAY WAY WORSE IF SHE KNEW. """
 
+planes = """i’m super big into DCS
+it’s the most advanced flight sim on the market
+It’s flight physics and handling are second to none. they have real pilots model everything, and you have a fully functioning cockpit and engine, so you actually acquire a technical understanding of how a plane operates
+and you learn and learn as you study and it becomes very rewarding as you truly begin to understand why planes like the p51 are so legendary due to its characteristics
+it’s beautiful ^^"""
+
+medical_horror2 = """I was taking call one night, and woke up at two in the morning for a "general surgery" call. Pretty vague, but at the time, I lived in a town that had large populations of young military guys and avid meth users, so late-night emergencies were common.
+
+Got to the hospital, where a few more details awaited me -- "Perirectal abscess." For the uninitiated, this means that somewhere in the immediate vicinity of the asshole, there was a pocket of pus that needed draining. Needless to say our entire crew was less than thrilled.
+
+I went down to the Emergency Room to transport the patient, and the only thing the ER nurse said as she handed me the chart was "Have fun with this one." Amongst healthcare professionals, vague statements like that are a bad sign.
+
+My patient was a 314lb Native American woman who barely fit on the stretcher I was transporting her on. She was rolling frantically side to side and moaning in pain, pulling at her clothes and muttering Hail Mary's. I could barely get her name out of her after a few minutes of questioning, so after I confirmed her identity and what we were working on, I figured it was best just to get her to the anesthesiologist so we could knock her out and get this circus started.
+
+She continued her theatrics the entire ten-minute ride to the O.R., nearly falling off the surgical table as we were trying to put her under anesthetic. We see patients like this a lot, though, chronic drug abusers who don't handle pain well and who have used so many drugs that even increased levels of pain medication don't touch simply because of high tolerance levels.
+
+It should be noted, tonight's surgical team was not exactly wet behind the ears. I'd been working in healthcare for several years already, mostly psych and medical settings. I've watched an 88-year-old man tear a 1"-diameter catheter balloon out of his penis while screaming "You'll never make me talk!". I've been attacked by an HIV-positive neo-Nazi. I've seen some shit. The other nurse had been in the OR as a trauma specialist for over ten years; the anesthesiologist had done residency at a Level 1 trauma center, or as we call them, "Knife and Gun Clubs". The surgeon was ex-Army, and averaged about eight words and two facial expressions a week. None of us expected what was about to happen next.
+
+We got the lady off to sleep, put her into the stirrups, and I began washing off the rectal area. It was red and inflamed, a little bit of pus was seeping through, but it was all pretty standard. Her chart had noted that she'd been injecting IV drugs through her perineum, so this was obviously an infection from dirty needles or bad drugs, but overall, it didn't seem to warrant her repeated cries of "Oh Jesus, kill me now."
+
+The surgeon steps up with a scalpel, sinks just the tip in, and at the exact same moment, the patient had a muscle twitch in her diaphragm, and just like that, all hell broke loose.
+
+Unbeknownst to us, the infection had actually tunneled nearly a foot into her abdomen, creating a vast cavern full of pus, rotten tissue, and fecal matter that had seeped outside of her colon. This godforsaken mixture came rocketing out of that little incision like we were recreating the funeral scene from Jane Austen's "Mafia!".
+
+We all wear waterproof gowns, face masks, gloves, hats, the works -- all of which were as helpful was rainboots against a firehose. The bed was in the middle of the room, an easy seven feet from the nearest wall, but by the time we were done, I was still finding bits of rotten flesh pasted against the back wall. As the surgeon continued to advance his blade, the torrent just continued. The patient kept seizing against the ventilator (not uncommon in surgery), and with every muscle contraction, she shot more of this brackish gray-brown fluid out onto the floor until, within minutes, it was seeping into the other nurse's shoes.
+
+I was nearly twelve feet away, jaw dropped open within my surgical mask, watching the second nurse dry-heaving and the surgeon standing on tip-toes to keep this stuff from soaking his socks any further. The smell hit them first. "Oh god, I just threw up in my mask!" The other nurse was out, she tore off her mask and sprinted out of the room, shoulders still heaving. Then it hit me, mouth still wide open, not able to believe the volume of fluid this woman's body contained. It was like getting a great big bite of the despair and apathy that permeated this woman's life. I couldn't fucking breath, my lungs simply refused to pull anymore of that stuff in. The anesthesiologist went down next, an ex-NCAA D1 tailback, his six-foot-two frame shaking as he threw open the door to the OR suite in an attempt to get more air in, letting me glimpse the second nurse still throwing up in the sinks outside the door. Another geyser of pus splashed across the front of the surgeon. The YouTube clip of "David at the dentist" keeps playing in my head -- "Is this real life?"
+
+In all operating rooms, everywhere in the world, regardless of socialized or privatized, secular or religious, big or small, there is one thing the same: Somewhere, there is a bottle of peppermint concentrate. Everyone in the department knows where it is, everyone knows what it is for, and everyone prays to their gods they never have to use it. In times like this, we rub it on the inside of our masks to keep the outside smells at bay long enough to finish the procedure and shower off.
+
+I sprinted to the our central supply, ripping open the drawer where this vial of ambrosia was kept, and was greeted by -- an empty fucking box. The bottle had been emptied and not replaced. Somewhere out there was a godless bastard who had used the last of the peppermint oil, and not replaced a single fucking drop of it. To this day, if I figure out who it was, I'll kill them with my bare hands, but not before cramming their head up the colon of every last meth user I can find, just so we're even.
+
+I darted back into the room with the next best thing I can find -- a vial of Mastisol, which is an adhesive rub we use sometimes for bandaging. It's not as good as peppermint, but considering that over one-third of the floor was now thoroughly coated in what could easily be mistaken for a combination of bovine after-birth and maple syrup, we were out of options.
+
+I started rubbing as much of the Mastisol as I could get on the inside of my mask, just glad to be smelling anything except whatever slimy demon spawn we'd just cut out of this woman. The anesthesiologist grabbed the vial next, dowsing the front of his mask in it so he could stand next to his machines long enough to make sure this woman didn't die on the table. It wasn't until later that we realized that Mastisol can give you a mild high from huffing it like this, but in retrospect, that's probably what got us through.
+
+By this time, the smell had permeated out of our OR suite, and down the forty-foot hallway to the front desk, where the other nurse still sat, eyes bloodshot and watery, clenching her stomach desperately. Our suite looked like the underground river of ooze from Ghostbusters II, except dirty. Oh so dirty.
+
+I stepped back into the OR suite, not wanting to leave the surgeon by himself in case he genuinely needed help. It was like one of those overly-artistic representations of a zombie apocalypse you see on fan-forums. Here's this one guy, in blue surgical garb, standing nearly ankle deep in lumps of dead tissue, fecal matter, and several liters of syrupy infection. He was performing surgery in the swamps of Dagobah, except the swamps had just come out of this woman's ass and there was no Yoda. He and I didn't say a word for the next ten minutes as he scraped the inside of the abscess until all the dead tissue was out, the front of his gown a gruesome mixture of brown and red, his eyes squinted against the stinging vapors originating directly in front of him. I finished my required paperwork as quickly as I could, helped him stuff the recently-vacated opening full of gauze, taped this woman's buttocks closed to hold the dressing for as long as possible, woke her up, and immediately shipped off to the recovery ward.
+
+Until then, I'd only heard of "alcohol showers." Turns out 70% isopropyl alcohol is about the only thing that can even touch a scent like that once its soaked into your skin. It takes four or five bottles to get really clean, but it's worth it. It's probably the only scenario I can honestly endorse drinking a little of it, too.
+
+As we left the locker room, the surgeon and I looked at each other, and he said the only negative sentence I heard him utter in two and a half years of working together:
+
+"That was bad."
+
+The next morning the entire department (a fairly large floor within the hospital) still smelled. The housekeepers told me later that it took them nearly an hour to suction up all of the fluid and debris left behind. The OR suite itself was closed off and quarantined for two more days just to let the smell finally clear out."""
+
+TIFU_story = """Obligatory this happened four years ago or so. I was 13 at the time—17 now. My best friend at the time had a hamster named Indiana Jones. Yes. Indiana Jones. The first day she had purchased Indie when we were around 10 or so, she picked him up out of his cage to pet and hold the little guy in his hand. Indie jumped out of her palm and fell about three or four feet onto the ground, giving himself a limp from there on out. While the original Indiana Jones didn’t have a limp—or was a hamster—we took Indie on many, many adventures.
+
+We would build obstacle courses outside and have Indie navigate them in his hamster ball. Construct massive tube mazes with treats hidden throughout them. Watch little Indie run on his hamster wheel. And on and on. The fun with Indie seemed like it would never end.
+
+One fateful day, my friend announced that Indie was probably going to die soon. I was bummed. I guess when he fell and hurt his leg, he suffered some internal damage that would soon end his life. When the day of Indie’s death came and passed, my friend had put his body in a little cardboard box that we we’re going to take with us on a camping trip with a group of friends and a friend’s mom.
+
+We planned to go on a 3-day trip where we could hangout, do some exploring, and have some fun. We didn’t want the trip to only be full of sadness and sorrow. At least that’s how I would have viewed it.
+
+We were out in the middle of nowhere in the midwest. So it was dark. Dark is an understatement. It was pitch black actually. Our first night out when we set-up camp my friend's mom had freeze dried pre-marinated meat in a ziplock bag to make a stew with.
+
+She asked me to grab it from the back of her jeep. She said it should be in a little cardboard box. I grab the box, pull the ziplock bag out, and dump the contents into our pot sitting on top of the burning camping stove in the middle of our campsite.
+
+After everything had been cooking for awhile, her mom grabs some bowls and begins to use a ladle and pour the stew into bowls for us.
+
+It tastes weird. Really weird.
+
+My friend’s mom comments that there are no bits of meat in her bowl, and we all look down and realize there isn’t any in any of ours. That’s odd. I was the one who put it in there.
+
+Confused, I grab a flashlight and approach the pot. As I look down, right in the middle of the stew, I see the disgustingly dead and grossly cooked body of Indiana Jones. I scream and instinctively kick the pot and stove over, and then watch to my dismay as the contents of the pot spill all over the ground and the lit camping stove begins to ignite my friend’s sleeping bag on fire."""
+
+disney_story = """I have one moment that stands out above all the rest. I was waiting for someone to ask me this question. It's the reason I left a good job as a VIP Tourguide and moved to the Character Department.
+
+I was working City Hall one day when two guests came in with two little girls. One was in a wheel chair and the other one looked like she had just seen death. Both were cut and bruised and the one in the wheelchair had her arm in a cast. The two women were actually nurses from a hospital and were asking for a refund on the girl's tickets, something we avoided doing at all costs. When I asked why they told me the story. The two girls were with their mom and dad at Epcot and on the way home they got into a horrible car accident. The mother was beheaded right in front of them. The father eventually died too but the two girls didn't know that yet. They were from overseas and had no money and no contact information for anyone they knew. They were bringing the tickets back to get the girls some much needed money to help get them back home. My heart absolutely sunk. If you had seen these girls you'd know why. They were truly traumatized. I refunded their tickets and got permission to be their private tour guide for the rest of the day (which they were not expecting). I walked them to the VIP viewing area for the parade which was as far as I could walk them in the costume we used to wear at City Hall. I had to leave them there while I put on my VIP costume. On the way down I pulled out every kid joke I could think of. I was a REALLY good tour guide (I helped write part of it) and I knew how to make kids smile. Nothing worked. These girls were too far gone for that. I left them at the bridge to go change, walked backstage and bawled my eyes out. I just had never seen something so horrible. I was truly affected and it was a terrible feeling of powerlessness not being able to fix the situation. When I came back I brought them to get ice-cream, take them on rides and stuff but they never smiled, not once. The nurses were loving it and were trying to get them into it but it just wasn't working. We went back to the bridge to watch the parade. It was there that I honestly saw true magic. Real magic, not bullshit. I had called the parade department to let them know what was going on and set up a private meet and greet after the parade. As the parade was coming around Liberty Square I told the girls that I had called Mickey and told him all about them. I told them that Mickey asked to meet them after the parade.
+
+The little girl in the wheelchair smiled.
+
+"Really?" she asked. My heart skipped. "Yes, really! He told me to tell you to look out for him in the parade and to follow the float back to City Hall."
+
+The other girl smiled.
+
+"You mean right now?" she asked.
+
+It had worked. They were talking. Not laughing, but talking. It was the first time I had heard them speak. Every single parade performer came up to them on the bridge and told them to look out for Mickey. Every one of them told them that. When Mickey's float came up Mickey (who was attached to a pole at the top of the float) managed to turn her body sideways, look down at the girls and point towards Main Street. That was all it took. The girls were excited now. They had forgotten about death. They were lost in a magical world and I couldn't believe I was watching it unfold in front of my eyes. We followed that float all the way back to City Hall, singing "Mickey Mania" the whole way. Back then, City Hall used to have a VIP lounge behind the desk that was for privacy during difficult situations or to host celebrities. I took them in and showed them the book where all of the autographs were. They were eating it up.
+
+The girl who was Mickey that day got down off her float and without even taking her head off walked up to me backstage and said "Let's go." I walked in with Mickey behind me so I got to see the exact moment the girls met their new friend. They got shy but Mikey was in control now. Those girls met the REAL Mickey Mouse that day. Every single parade character stayed dressed to meet those girls. One by one they'd come in and play a bit then leave. We were in that lounge for over an hour. Mickey stayed in costume the entire time (which is hard to do after a parade). When Mickey finally said goodbye I had two excited girls on my hands that couldn't stop smiling. They talked and talked and talked. We had a wonderful day after that but what I remember most is when we walked by the rose garden, the older one said "Oh, my mommy loves roses! I mean..." and she stopped. I held out my hand and walked her to the gate, picked her up and put her on the other side and said "Pick one!" She looked happy as she picked out her favorite rose. She didn't say anything more and she didn't need to. I said goodbye to the wonderful nurses and the wonderful girls then walked backstage behind the train station. This time I didn't cry. It felt so good to be a part of that. I realized that as much as I liked helping guests at City Hall, the true magic of Disney was in the character department. I auditioned, transferred and never looked back. Thanks for letting me relive this. It was a special day for me."""
 
 print("Wikipedia")
 sentiment_analysis(wikipedia)
@@ -115,3 +220,11 @@ print("\nMedical Horror Story")
 sentiment_analysis(medical_horror)
 print("\nWeed Story")
 sentiment_analysis(weed_story)
+print("\nPost on Planes")
+sentiment_analysis(planes)
+print("\nMedical Horror Story 2")
+sentiment_analysis(medical_horror2)
+print("\nTIFU Story")
+sentiment_analysis(TIFU_story)
+print("\nDisney Story")
+sentiment_analysis(disney_story)
