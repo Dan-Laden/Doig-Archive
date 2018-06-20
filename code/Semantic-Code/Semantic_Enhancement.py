@@ -390,7 +390,7 @@ def getSentiment(example_sentence):
 
     f.close()
 
-    positivity_rating = 0 #add all eight
+    positivity_rating = 0
     emotions = {"fear" : 0,  "anger" : 0, "sadness" : 0, "joy" : 0, "disgust" : 0, "surprise" : 0, "trust" : 0, "anticipation" : 0}
     for word in example_sentence:
         if word in emotion_dictionary:
@@ -401,18 +401,25 @@ def getSentiment(example_sentence):
             positivity_rating = positivity_rating + emotion_dictionary[word]["positive"] - emotion_dictionary[word]["negative"]
 
 
-    #TODO calculate if the emotion is best suited for how positive the text is
-    top_emotion = "anger"
+    top_emotion = "fear"
     for emotion in emotions:
         if(emotions[top_emotion]<emotions[emotion]):
             top_emotion = emotion
 
 
-    if(positivity_rating>=0):
+    if(positivity_rating>0):
+        tone = "positive"
+    elif(positive_rating<0):
+        tone = "negative"
+    else:
+        tone = "neutral"
+
+    textural_emotion = tone + " " + top_emotion
 
 
-    print(emotions)
-    print("positive rating : "+(str)(positivity_rating))
+    print(textural_emotion)
+
+    return textural_emotion
 
 #End of functions for data parsing
 #########################
