@@ -137,7 +137,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     img = img.replace((" "), "-")
 
     #puts the database item in a queue to be pulled later
-    queue.put((Item(filename, rawtext, keywordlist, pages, source, geolocation, img), relationList))
+    queue.put((Item(filename, rawtext, keywordlist, pages, source, geolocation, img, getSentiment(rawtext)), relationList))
     print("Output for "+filename+" finished")
 
 #This method fills the database with a new item from the itemQueue
@@ -145,8 +145,8 @@ def fillItemDB(item):
     connection = sqlite3.connect("items.db")
     cursor = connection.cursor()
 
-    sql_addto = """INSERT INTO ITEMS (ID, RawText, Keyword, Pages, RelatedBook, Geolocation, Img)
-    VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}');""".format(item.ID, item.rawText, item.keywords, item.pages, item.relatedBook, item.geolocations, item.img)
+    sql_addto = """INSERT INTO ITEMS (ID, RawText, Keyword, Pages, RelatedBook, Geolocation, Img, Emotion)
+    VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}');""".format(item.ID, item.rawText, item.keywords, item.pages, item.relatedBook, item.geolocations, item.img, item.emotion)
     cursor.execute(sql_addto)
 
     # necessary for saving changes made
@@ -219,7 +219,7 @@ def clearItemDB():
 
 #This is the python object that holds everything for a database entry
 class Item:#For database usage
-    def __init__(self, inID, inRawText, inKeywords, inPages, inRelatedBook, inGeolocations, inImg):
+    def __init__(self, inID, inRawText, inKeywords, inPages, inRelatedBook, inGeolocations, inImg, inEmotion):
         self.ID = inID
         self.rawText = inRawText
         self.keywords = inKeywords
@@ -227,6 +227,7 @@ class Item:#For database usage
         self.relatedBook = inRelatedBook
         self.geolocations = inGeolocations
         self.img = inImg
+        self.emotion = inEmotion
 
 #This class is meant to hold three things rather than having these in a list in the dictionaries
 #source is the file name from where the keyword is found, and occurences are the number of times
@@ -373,7 +374,7 @@ def makeRelations(relationList, nameOfFiles):
     return connectedList
 
 #This function returns the sentiment values for the entered in text
-def getSentiment(example_sentence):
+def getSentiment(entered_text):
     f=open("NRC-Emotion-Lexicon-Wordlevel-v0.92.txt", 'r')
     active_word = " "
     emotion_dictionary = {}
@@ -386,13 +387,13 @@ def getSentiment(example_sentence):
 
         emotion_dictionary[words[0]][words[1]] = (int)(words[2])
 
-    example_sentence = example_sentence.split()
+    entered_text = entered_text.split()
 
     f.close()
 
     positivity_rating = 0
     emotions = {"fear" : 0,  "anger" : 0, "sadness" : 0, "joy" : 0, "disgust" : 0, "surprise" : 0, "trust" : 0, "anticipation" : 0}
-    for word in example_sentence:
+    for word in entered_text:
         if word in emotion_dictionary:
             #print(word + " : " + (str)(emotion_dictionary[word]))
             for emotion in emotions:
@@ -409,7 +410,7 @@ def getSentiment(example_sentence):
 
     if(positivity_rating>0):
         tone = "positive"
-    elif(positive_rating<0):
+    elif(positivity_rating<0):
         tone = "negative"
     else:
         tone = "neutral"
@@ -420,6 +421,7 @@ def getSentiment(example_sentence):
     print(textural_emotion)
 
     return textural_emotion
+
 
 #End of functions for data parsing
 #########################
