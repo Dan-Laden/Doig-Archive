@@ -16,7 +16,7 @@
   $keywordDir = 'sqlite:relation.db';
   $bookdb  = new PDO($bookDir) or die("Database 404: Error code 4060");
   $itemdb  = new PDO($itemDir) or die("Database 404: Error code 4060");
-  $keyworddb  = new PDO($itemDir) or die("Database 404: Error code 4060");
+  $keyworddb  = new PDO($keywordDir) or die("Database 404: Error code 4060");
 
   $search = "%".$searchword."%";
 
@@ -25,28 +25,32 @@
     SELECT * from BOOKS
     WHERE Title LIKE :fill;
 SQL;
+
   $getChapters=<<<SQL
     SELECT ID from ITEMS
     WHERE ID LIKE :fill
     ORDER BY length(ID), ID;
 SQL;
+
   $getKeywords=<<<SQL
-    SELECT Key from Keyword
-    WHERE Key LIKE :fill;
+    SELECT Keyword from RELATIONS
+    WHERE Keyword LIKE :fill;
 SQL;
 
 $keywords = prepdb($keyworddb, $getKeywords, $search);
 $chapters = $keywords["SourceFile"];
 
-$getRelated=<<<SQL
-  SELECT Key from Keyword
-  WHERE Key LIKE :fill
-  WHERE SourceFile='$chapters';
-SQL;
+$relations = array();
+foreach ($chapters as $chapter) {
+  if(!(in_array($chapter, $relations)))
+  {
+    array_push($relations, $chapter);
+  }
+}
 
 $books = prepdb($bookdb, $getBooks, $search);
 $chapters = prepdb($itemdb, $getChapters, $search);
-$keywords = prepdb($keyworddb, $getRelated, $search);
+
 
 
  ?>
