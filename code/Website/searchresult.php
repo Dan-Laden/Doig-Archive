@@ -7,7 +7,7 @@
     $rows->bindParam(':fill', $filler);
     $rows->execute();
     $rows->setFetchMode(PDO::FETCH_ASSOC);
-    $row = $rows->fetch();
+    $row = $rows->fetchAll();
     return $row;
   }
 
@@ -22,7 +22,7 @@
 
 
   $getBooks=<<<SQL
-    SELECT * from BOOKS
+    SELECT Title from BOOKS
     WHERE Title LIKE :fill;
 SQL;
 
@@ -33,15 +33,15 @@ SQL;
 SQL;
 
   $getKeywords=<<<SQL
-    SELECT Keyword from RELATIONS
+    SELECT * from RELATIONS
     WHERE Keyword LIKE :fill;
 SQL;
 
 $keywords = prepdb($keyworddb, $getKeywords, $search);
-$chapters = $keywords["SourceFile"];
 
 $relations = array();
-foreach ($chapters as $chapter) {
+foreach ($keywords as $keyword) {
+  $chapter = $keyword["SourceFile"];
   if(!(in_array($chapter, $relations)))
   {
     array_push($relations, $chapter);
@@ -51,8 +51,11 @@ foreach ($chapters as $chapter) {
 $books = prepdb($bookdb, $getBooks, $search);
 $chapters = prepdb($itemdb, $getChapters, $search);
 
+$numResults = count($books) + count($chapters) + count($relations);
 
-
+#var_dump($books);
+#var_dump($chapters);
+#var_dump($relations);
  ?>
 <!DOCTYPE html>
 <html>
@@ -60,7 +63,7 @@ $chapters = prepdb($itemdb, $getChapters, $search);
   <meta charset="UTF-8">
   <title>MSU Archives</title>
   <link rel="stylesheet" type="text/css" href="css/global.css" />
-    <link rel="stylesheet" type="text/css" href="css/relation-page.css" />
+  <link rel="stylesheet" type="text/css" href="css/relation-page.css" />
 </head>
 <nav>
   <ul>
@@ -75,11 +78,36 @@ $chapters = prepdb($itemdb, $getChapters, $search);
     <div id="Content">
       <?php echo("<h1>$searchword</h1>");  ?>
       <h4> __________________________________ </h4>
+      <?php echo("<h4>$numResults results have been found</h4>");  ?>
       <div id="Top-Content">
         <h2> Related Items </h2>
           <div id=Search-Item>
-            <img src="img/related1.jpg" alt="Book related to This House of Sky">
-            <span> Chapter 1 </span>
+            <ul>
+            <?php
+              #<img src="img/related1.jpg" alt="Book related to This House of Sky">
+              #<span> Chapter 1 </span>
+              foreach ($books as $book)
+              {
+                $title = $book["Title"];
+                $url = "book-page.php?book=".$title;
+                echo("<li><a href='$url'>$title</a></li>");
+              }
+
+              foreach ($chapters as $chapter)
+              {
+                $id = $chapter["ID"];
+                $url = "item-page.php?item=".$id;
+                echo("<li><a href='$url'>$id</a></li>");
+              }
+
+              foreach ($relations as $relation)
+              {
+                $source = $relation;
+                $url = "item-page.php?item=".$source;
+                echo("<li><a href='$url'>$source</a></li>");
+              }
+            ?>
+          </ul>
           </div>
       </div>
       <div id="Bottom-Content">
