@@ -125,7 +125,6 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
 
         f.close()
 
-
     #This creates the "Proper" file names to be used in the dynamic pages
     #filename is the title of the book while source is the related book
     filename = filename.replace("-", " ")
@@ -135,6 +134,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     filename = filename.replace((" "+digit), (", Chapter "+digit))
     img = "img/"+source+"/"+digit+".png"
     img = img.replace((" "), "-")
+
 
     #puts the database item in a queue to be pulled later
     queue.put((Item(filename, rawtext, keywordlist, pages, source, geolocation, img, getSentiment(rawtext)), relationList))
@@ -357,21 +357,32 @@ def grabRelations(inRelationList, fileName):
     return relationList
 
 #This function takes a list of read in files from the program and creates a "graph" of biconnected ConnectedRelation objects
-def makeRelations(relationList, nameOfFiles):
+def makeRelations(relationList):
     connectedList = []
-    while(nameOfFiles):
-        source = nameOfFiles.pop()
+    switcher = 0
+    #TODO fix the only using the first chapter from everybook
+    #TODO go until relation 2 is after relation 1
+    for relation1 in relationList:
+        for relation2 in relationList: #This if statement needs to check to make sure the keywords are the same, and the relation1 source is not from the same book as the relation2
+            if relation2.source == relation1.source and switcher == 0:
+                print(relation2.source + "--------" + relation1.source)
+                switcher = 1
+            elif relation1.source != relation2.source and relation1.keyword == relation2.keyword and switcher == 1:
+                weight1 = relation1.occurrences * (relation1.pages * 0.1)
+                weight2 = relation2.occurrences * (relation2.pages * 0.1)
+                connectedList.append(ConnectedRelation(filenameFix(relation2.source), relation2.keyword, filenameFix(relation1.source), computeWeight(weight2, weight1)))
 
-        source_relations = grabRelations(relationList, source) #grabs the Relation objects for the source
-
-        for relation1 in relationList:
-            for relation2 in source_relations: #This if statement needs to check to make sure the keywords are the same, and the relation1 source is not from the same book as the relation2
-                if relation1.source != source and relation1.keyword == relation2.keyword and (relation1.source[0:len(relation1.source)-2] != relation2.source[0:len(relation2.source)-2] or relation1.source[0:len(relation1.source)-3] != relation2.source[0:len(relation2.source)-3]):
-                    weight1 = relation1.occurrences * (relation1.pages * 0.1)
-                    weight2 = relation2.occurrences * (relation2.pages * 0.1)
-                    connectedList.append(ConnectedRelation(relation2.source, relation2.keyword, relation1.source, computeWeight(weight2, weight1)))
-
+        switcher = 0
+        
     return connectedList
+
+def filenameFix(filename):
+    filename = filename.replace("-", " ")
+    digits = re.findall('\d+', filename)#I'm using regular expressions instead of forloops because I think that's faster proformance
+    digit = digits[0]
+    source = filename.replace((" "+digit), "")
+    filename = filename.replace((" "+digit), (", Chapter "+digit))
+    return filename
 
 #This function returns the sentiment values for the entered in text
 def getSentiment(entered_text):
@@ -493,7 +504,7 @@ print("--- %s seconds to load all information in the databases ---" % (time.time
 
 #NOTE start of relation building
 
-fillRelationDB(makeRelations(relationList, nameOfFiles)) #creates the relations and fills a database with those relations
+fillRelationDB(makeRelations(relationList)) #creates the relations and fills a database with those relations
 
 print("--- %s seconds to create all relations ---" % (time.time() - start_time))
 
