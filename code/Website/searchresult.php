@@ -21,6 +21,8 @@
   $search = "%".$searchword."%";
 
 
+
+#These are the three databases that get queried when searching
   $getBooks=<<<SQL
     SELECT Title from BOOKS
     WHERE Title LIKE :fill;
@@ -34,11 +36,13 @@ SQL;
 
   $getKeywords=<<<SQL
     SELECT * from RELATIONS
-    WHERE Keyword LIKE :fill;
+    WHERE Keyword LIKE :fill
+    ORDER BY Weight;
 SQL;
 
 $keywords = prepdb($keyworddb, $getKeywords, $search);
 
+#instead of getting if the keyword exists this finds what item the keyword appears in
 $relations = array();
 foreach ($keywords as $keyword) {
   $chapter = $keyword["SourceFile"];
@@ -48,14 +52,10 @@ foreach ($keywords as $keyword) {
   }
 }
 
+#these are where the results are stored
 $books = prepdb($bookdb, $getBooks, $search);
 $chapters = prepdb($itemdb, $getChapters, $search);
-
 $numResults = count($books) + count($chapters) + count($relations);
-
-#var_dump($books);
-#var_dump($chapters);
-#var_dump($relations);
  ?>
 <!DOCTYPE html>
 <html>
