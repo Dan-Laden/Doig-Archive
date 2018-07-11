@@ -81,30 +81,33 @@ $numResults = count($books) + count($chapters) + count($relations);
       <?php echo("<h4>$numResults results have been found</h4>");  ?>
       <div id="Top-Content">
         <h2> Related Items </h2>
-          <div id=Search-Item>
+          <div id="Search-Item">
             <ul>
             <?php
               #<img src="img/related1.jpg" alt="Book related to This House of Sky">
               #<span> Chapter 1 </span>
               foreach ($books as $book)
               {
+                echo("<div id ='Result-Item'>");
                 $title = $book["Title"];
                 $url = "book-page.php?book=".$title;
-                echo("<li><a href='$url'>$title</a></li>");
+                echo("<li><a href='$url'>$title</a></li></div>");
               }
 
               foreach ($chapters as $chapter)
               {
+                echo("<div id ='Result-Item'>");
                 $id = $chapter["ID"];
                 $url = "item-page.php?item=".$id;
-                echo("<li><a href='$url'>$id</a></li>");
+                echo("<li><a href='$url'>$id</a></li></div>");
               }
 
               foreach ($relations as $relation)
               {
+                echo("<div id ='Result-Item'>");
                 $source = $relation;
                 $url = "item-page.php?item=".$source;
-                echo("<li><a href='$url'>$source</a></li>");
+                echo("<li><a href='$url'>$source</a></li></div>");
               }
             ?>
           </ul>

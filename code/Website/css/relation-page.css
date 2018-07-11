@@ -20,3 +20,8 @@ nav ul li {float: left;width: 60%}
   padding-bottom: 5%;
 }
 #Related-Item span {display: block;}
+#Result-Item
+{
+  padding-bottom: 2%;
+  background: white;
+}
