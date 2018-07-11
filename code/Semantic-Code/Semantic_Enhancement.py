@@ -365,15 +365,16 @@ def makeRelations(relationList):
     for relation1 in relationList:
         for relation2 in relationList: #This if statement needs to check to make sure the keywords are the same, and the relation1 source is not from the same book as the relation2
             if relation2.source == relation1.source and switcher == 0:
-                print(relation2.source + "--------" + relation1.source)
                 switcher = 1
             elif relation1.source != relation2.source and relation1.keyword == relation2.keyword and switcher == 1:
                 weight1 = relation1.occurrences * (relation1.pages * 0.1)
                 weight2 = relation2.occurrences * (relation2.pages * 0.1)
-                connectedList.append(ConnectedRelation(filenameFix(relation2.source), relation2.keyword, filenameFix(relation1.source), computeWeight(weight2, weight1)))
+                connectedweight = computeWeight(weight2, weight1)
+                if(connectedweight >= 0.01):
+                    connectedList.append(ConnectedRelation(filenameFix(relation2.source), relation2.keyword, filenameFix(relation1.source), connectedweight))
 
         switcher = 0
-        
+
     return connectedList
 
 def filenameFix(filename):
