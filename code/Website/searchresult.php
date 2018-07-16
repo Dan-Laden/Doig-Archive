@@ -89,25 +89,36 @@ $numResults = count($books) + count($chapters) + count($relations);
               foreach ($books as $book)
               {
                 echo("<div id ='Result-Item'>");
+                echo("<div id ='Result-Img'>");
+                $picture = $book["Img"];
+                $img = "img/".$picture;
+                echo("<img src=$img alt='A book by Ivan Doig'>");
+                echo("</div><div id ='Result-Link'>");
                 $title = $book["Title"];
                 $url = "book-page.php?book=".$title;
-                echo("<li><a href='$url'>$title</a></li></div>");
+                echo("<li><a href='$url'>$title</a></li></div></div>");
               }
 
               foreach ($chapters as $chapter)
               {
                 echo("<div id ='Result-Item'>");
+                echo("<div id ='Result-Img'>");
+                $img = $book["Img"];
+                echo("<img src=$img alt='A book by Ivan Doig'>");
+                echo("</div><div id ='Result-Link'>");
                 $id = $chapter["ID"];
                 $url = "item-page.php?item=".$id;
-                echo("<li><a href='$url'>$id</a></li></div>");
+                echo("<li><a href='$url'>$id</a></li></div></div>");
               }
 
               foreach ($relations as $relation)
               {
                 echo("<div id ='Result-Item'>");
+                echo("<div id ='Result-Img'>");
+                echo("</div><div id ='Result-Link'>");
                 $source = $relation;
                 $url = "item-page.php?item=".$source;
-                echo("<li><a href='$url'>$source</a></li></div>");
+                echo("<li><a href='$url'>$source</a></li></div></div>");
               }
             ?>
           </ul>
