@@ -1,5 +1,53 @@
 <?php
   $keyword = $_GET['keyword'];
+
+  #This is for fixing the possibility of sql injections
+  function prepdb($db, $sql, $filler){
+    $rows = $db->prepare($sql);
+    $rows->bindParam(':fill', $filler);
+    $rows->execute();
+    $rows->setFetchMode(PDO::FETCH_ASSOC);
+    $row = $rows->fetchAll();
+    return $row;
+  }
+
+  $keywordDir = 'sqlite:relation.db';
+  $itemDir = 'sqlite:items.db';
+  $keyworddb  = new PDO($keywordDir) or die("Database 404: Error code 4060");
+  $itemdb  = new PDO($itemDir) or die("Database 404: Error code 4060");
+
+  $getChapters=<<<SQL
+    SELECT * from ITEMS
+    WHERE ID LIKE :fill
+    ORDER BY length(ID), ID;
+SQL;
+
+  $getKeywords=<<<SQL
+    SELECT * from RELATIONS
+    WHERE Keyword LIKE :fill
+    ORDER BY Weight;
+SQL;
+
+  $keywords = prepdb($keyworddb, $getKeywords, $keyword);
+
+
+  #instead of getting if the keyword exists this finds what item the keyword appears in
+  $relations = array();
+  foreach ($keywords as $keyword) {
+    $chapter = $keyword["SourceFile"];
+    if(!(in_array($chapter, $relations)))
+    {
+      array_push($relations, $chapter);
+    }
+  }
+
+  $rel_images = array();
+  foreach ($relations as $relation) {
+    $item = prepdb($itemdb, $getChapters, $relation);
+    $img = $item["Img"];
+    array_push($rel_images, $img);
+  }
+
  ?>
 <!DOCTYPE html>
 <html>
@@ -26,64 +74,31 @@
         <h2> Related Items </h2>
 
         <!-- Each row contains 4 items that have a close relation value to the keyword found this is generated so the max is 12 the minimum is none -->
-        <div id="Row">
-          <div id=Related-Item>
-            <img src="img/related1.jpg" alt="Book related to This House of Sky">
-            <span> Chapter 1 </span>
-          </div>
-          <div id=Related-Item>
-            <img src="img/related1.jpg" alt="Book related to This House of Sky">
-            <span> Chapter 2 </span>
-          </div>
-          <div id=Related-Item>
-            <img src="img/related1.jpg" alt="Book related to This House of Sky">
-            <span> Chapter 3 </span>
-          </div>
-          <div id=Related-Item>
-            <img src="img/related1.jpg" alt="Book related to This House of Sky">
-            <span> Chapter 4 </span>
-          </div>
-        </div>
+        <?php
+          $index = 0;
+          foreach ($relations as $relation) {
+            if($index === 0)
+            {
+              echo("<div id='Row'>");
+            }
+            elseif("integer" === gettype($index/4))
+            {
+              echo("</div><div id='Row'>");
+            }
+            $htmlstring = <<<HEREDOC
+              <div id=Related-Item>
+                <img src="$rel_images[$index]" alt="cover of $relation">
+                <span> $relation </span>
+              </div>
+HEREDOC;
+            echo($htmlstring);
+            ++$index;
+          }
 
-        <!-- Row 2/3-->
-        <div id="Row">
-          <div id=Related-Item>
-            <img src="img/related2.jpg" alt="Book related to This House of Sky">
-            <span> Chapter 5 </span>
-          </div>
-          <div id=Related-Item>
-            <img src="img/related2.jpg" alt="Book related to This House of Sky">
-            <span> Chapter 6 </span>
-          </div>
-          <div id=Related-Item>
-            <img src="img/related2.jpg" alt="Book related to This House of Sky">
-            <span> Chapter 7 </span>
-          </div>
-          <div id=Related-Item>
-            <img src="img/related2.jpg" alt="Book related to This House of Sky">
-            <span> Chapter 8 </span>
-          </div>
-        </div>
 
-        <!-- Row 3/3-->
-        <div id="Row">
-          <div id=Related-Item>
-            <img src="img/related3.jpg" alt="Book related to This House of Sky">
-            <span> Chapter 9 </span>
-          </div>
-          <div id=Related-Item>
-            <img src="img/related3.jpg" alt="Book related to This House of Sky">
-            <span> Chapter 10 </span>
-          </div>
-          <div id=Related-Item>
-            <img src="img/related3.jpg" alt="Book related to This House of Sky">
-            <span> Chapter 11 </span>
-          </div>
-          <div id=Related-Item>
-            <img src="img/related3.jpg" alt="Book related to This House of Sky">
-            <span> Chapter 12 </span>
-          </div>
-        </div>
+         ?>
+
+        
       </div>
       <div id="Bottom-Content">
 
