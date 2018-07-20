@@ -55,6 +55,8 @@ foreach ($keywords as $keyword) {
 #these are where the results are stored
 $books = prepdb($bookdb, $getBooks, $search);
 $chapters = prepdb($itemdb, $getChapters, $search);
+
+#counts the number of results that spawn
 $numResults = count($books) + count($chapters) + count($relations);
  ?>
 <!DOCTYPE html>
