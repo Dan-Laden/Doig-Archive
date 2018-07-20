@@ -11,6 +11,7 @@
     return $row;
   }
 
+
   $keywordDir = 'sqlite:relation.db';
   $itemDir = 'sqlite:items.db';
   $keyworddb  = new PDO($keywordDir) or die("Database 404: Error code 4060");
@@ -44,7 +45,7 @@ SQL;
   $rel_images = array();
   foreach ($relations as $relation) {
     $item = prepdb($itemdb, $getChapters, $relation);
-    $img = $item["Img"];
+    $img = $item[0]["Img"];
     array_push($rel_images, $img);
   }
 
@@ -98,7 +99,7 @@ HEREDOC;
 
          ?>
 
-        
+
       </div>
       <div id="Bottom-Content">
 
