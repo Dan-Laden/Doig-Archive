@@ -477,15 +477,32 @@ print("--- %s loading files time seconds ---" % (time.time() - start_time))
 
 process_queue = []
 itemQueue = multiprocessing.Queue()
+clearItemDB()
+relationList = []
+process_limit = 0
 for key in rawFiles: #performs all the semantic actions in sequence
     p = multiprocessing.Process(target=semanticActions, args=(key, rawFiles[key][0],rawFiles[key][1], rawFiles[key][2], itemQueue,  ))
     p.start()
     process_queue.append(p)
+    if process_limit > 30: #stops the program from creating more processes and killing the system
+        print("Halting processing time halted %s" % (time.time() - start_time))
+        while process_limit != 0:
+            if itemQueue.empty():
+                #print("Nothing in queue")
+                time.sleep(0.1)
+            else:
+                #print("Filling DB")
+                item = itemQueue.get()
+                fillItemDB(item[0])
+                relationList = relationList + item[1]
+                numOfFiles-=1
+                process_limit-=1
+    else:
+        process_limit+=1
 
 
-clearItemDB()
-relationList = []
-#While the program waits for all files to be processes it will wait in the while and keep taking short sleeps until a file is detected in the itemQueue
+
+#While the program waits for the last files to be processes it will wait in the while and keep taking short sleeps until a file is detected in the itemQueue
 while numOfFiles > 0:#wait
     if itemQueue.empty():
         #print("Nothing in queue")
