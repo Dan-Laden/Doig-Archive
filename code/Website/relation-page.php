@@ -86,10 +86,11 @@ SQL;
             {
               echo("</div><div id='Row'>");
             }
+            $url = "item-page.php?item=".$relation;
             $htmlstring = <<<HEREDOC
               <div id=Related-Item>
-                <img src="$rel_images[$index]" alt="cover of $relation">
-                <span> $relation </span>
+                <a href="$url"><img src="$rel_images[$index]" alt="cover of $relation">
+                <span> $relation </span></a>
               </div>
 HEREDOC;
             echo($htmlstring);
