@@ -27,6 +27,17 @@ from geopy.geocoders import GeoNames #ref doc: http://geopy.readthedocs.io/en/st
 stoplist = set(stopwords.words('english'))#set of all stopwords in english thanks to nltk
 
 #########################
+#Global variables
+global numOfPlaces
+global PROCESS_LIMIT
+
+PROCESS_LIMIT = 30
+
+#End of Global variables
+#########################
+
+
+#########################
 #Main functions for data parsing
 
 #Main function that executes all the functions before for parsing, dividing, and serving up enriched text.
@@ -281,7 +292,6 @@ def geoServer(listPlaces):
     geolocator = GeoNames(username="dan_laden")
     geolocations = []
     process_queue = []
-    global numOfPlaces
     numOfPlaces = 0 #keeps track of how many places are caught by the geolocator for the queue extraction
     queue = multiprocessing.Queue()
     for loc in listPlaces: #TODO next change with a list of accounts to login with
@@ -464,6 +474,7 @@ while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reade
             numOfFiles+=1
             key = sys.argv[argc]+"-"+(str)(count)
             path = filepath+"/"+key+".pdf"
+        print(path)
 
     #If the folder holding the chapters isn't found this prints out then continues running through.
     elif(not(os.path.exists(filepath)) and filepath == ("source/"+sys.argv[argc])):
@@ -479,14 +490,14 @@ process_queue = []
 itemQueue = multiprocessing.Queue()
 clearItemDB()
 relationList = []
-process_limit = 0
+activeProcesses = 0
 for key in rawFiles: #performs all the semantic actions in sequence
     p = multiprocessing.Process(target=semanticActions, args=(key, rawFiles[key][0],rawFiles[key][1], rawFiles[key][2], itemQueue,  ))
     p.start()
     process_queue.append(p)
-    if process_limit > 30: #stops the program from creating more processes and killing the system
+    if activeProcesses > PROCESS_LIMIT: #stops the program from creating more processes and killing the system
         print("Halting processing time halted %s" % (time.time() - start_time))
-        while process_limit != 0:
+        while activeProcesses != 0:
             if itemQueue.empty():
                 #print("Nothing in queue")
                 time.sleep(0.1)
@@ -496,9 +507,9 @@ for key in rawFiles: #performs all the semantic actions in sequence
                 fillItemDB(item[0])
                 relationList = relationList + item[1]
                 numOfFiles-=1
-                process_limit-=1
+                activeProcesses-=1
     else:
-        process_limit+=1
+        activeProcesses+=1
 
 
 
