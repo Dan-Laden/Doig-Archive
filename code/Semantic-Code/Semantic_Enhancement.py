@@ -3,7 +3,7 @@
 # email@ dthomasladen@gmail.com #
 #################################
 
-print("Main File")#This is only a test files this shouldn't be used for production
+print("Main File")
 import time
 start_time = time.time()
 
@@ -108,14 +108,13 @@ def KeywordCounter(keywordList):
 def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     #write general text to a .txt file
     filetypes = ["Raw", "Keywords", "Geolocations"]
-    relationList = []
 
     keywordlist = ""
     for keywords in keylist:
         for key in keywords:
             if(key[1]>1):
-                keywordlist = keywordlist + key[0] + "; "
-                relationList.append(Relation(filename, key[0], key[1], pages)) #NOTE where the Relation objects are created
+                keywordlist = keywordlist + key[0] + "|" + (str)(key[1]) + "; "
+
     geolocation = ""
     for geoloc in geolocations:
         geolocation = geolocation + geoloc.address + "; "
@@ -123,7 +122,12 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
 
     #outputs rawtext, keywords, and geolocations to text files
     for types in filetypes:
-        path = "output/"+filename[:(len(filename))-2]+"/"+types+"/"+types+"-"+filename+".txt"
+        #NOTE If larger books are inserted this might need to be changed if chapters go over 3 digits and so on to catch all cases
+        try:
+            value = (int)(filename[(len(filename))-3:])
+            path = "output/"+filename[:(len(filename))-3]+"/"+types+"/"+types+"-"+filename+".txt"
+        except ValueError:
+            path = "output/"+filename[:(len(filename))-2]+"/"+types+"/"+types+"-"+filename+".txt"
         makedir(path)
         f = open(path, "w")
 
@@ -148,7 +152,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
 
 
     #puts the database item in a queue to be pulled later
-    queue.put((Item(filename, rawtext, keywordlist, pages, source, geolocation, img, getSentiment(rawtext)), relationList))
+    queue.put(Item(filename, rawtext, keywordlist, pages, source, geolocation, img, getSentiment(rawtext)))
     print("Output for "+filename+" finished")
 
 #This method fills the database with a new item from the itemQueue
@@ -159,37 +163,6 @@ def fillItemDB(item):
     sql_addto = """INSERT INTO ITEMS (ID, RawText, Keyword, Pages, RelatedBook, Geolocation, Img, Emotion)
     VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}');""".format(item.ID, item.rawText, item.keywords, item.pages, item.relatedBook, item.geolocations, item.img, item.emotion)
     cursor.execute(sql_addto)
-
-    # necessary for saving changes made
-    connection.commit()
-
-    connection.close()
-
-#This method fills the database with the relations created in makeRelations
-def fillRelationDB(relationList):
-    connection = sqlite3.connect("relation.db")
-    cursor = connection.cursor()
-
-    try:
-        #For cleaning the database for testing
-        cursor.execute("""DELETE FROM RELATIONS;""")
-
-    #This  is for if the database is new and a table for the items is needed to be created.
-    except sqlite3.OperationalError:
-        print("Detect no previous database, one will be made.")
-
-        sql_createtb = """CREATE TABLE `RELATIONS` (
-        `SourceFile`	TEXT,
-        `Keyword`	TEXT,
-        `RelatedFile`	TEXT,
-        `Weight`	INTEGER
-        );"""
-        cursor.execute(sql_createtb)
-
-    for relation in relationList:
-        sql_addto = """INSERT INTO relations (SourceFile, Keyword, RelatedFile, Weight)
-        VALUES ('{0}', '{1}', '{2}', '{3}');""".format(relation.source, relation.keyword, relation.related, relation.weight)
-        cursor.execute(sql_addto)
 
     # necessary for saving changes made
     connection.commit()
@@ -240,28 +213,7 @@ class Item:#For database usage
         self.img = inImg
         self.emotion = inEmotion
 
-#This class is meant to hold three things rather than having these in a list in the dictionaries
-#source is the file name from where the keyword is found, and occurences are the number of times
-#that keyword shows up in the source
-class Relation:
-    def __init__(self, inSource, inKeyword, inOccurrences, inPages):
-        self.source = inSource
-        self.keyword = inKeyword
-        self.occurrences = inOccurrences
-        self.pages = inPages
 
-
-#Much like the class above this was made to avoid using lists inside of dictionaries
-#Source is the file that has the same keyword as the file we're looking at
-#Keyword is the specific keyword being related between Source and Related
-#Related is the file that has a connection to Source by keyword
-#Weight is calculated by computeWeight but it's how strong that relation is
-class ConnectedRelation:
-    def __init__(self, inSource, inKeyword, inRelated, inWeight):
-        self.source = inSource
-        self.keyword = inKeyword
-        self.related = inRelated
-        self.weight = inWeight
 
 #This function creates a list of compound places to iterate through for locational checking.
 #Creates two or more string tokens
@@ -346,46 +298,6 @@ def makedir(path):
             if exc.errno != errno.EEXIST:
                 raise
 
-#This function computes the weight by normalizing the two entered in values
-def computeWeight(v1, v2):
-    R = 0
-    if(v1>v2):
-        R = v2/v1
-    elif(v1<v2):
-        R = v1/v2
-    else:
-        R = 1
-    return R
-
-#This function find the Relation objects with the same source as the passed in fileName
-def grabRelations(inRelationList, fileName):
-    relationList = []
-    for relation in inRelationList:
-        if fileName == relation.source:
-            relationList.append(relation)
-
-    return relationList
-
-#This function takes a list of read in files from the program and creates a "graph" of biconnected ConnectedRelation objects
-def makeRelations(relationList):
-    connectedList = []
-    switcher = 0
-    #TODO fix the only using the first chapter from everybook
-    #TODO go until relation 2 is after relation 1
-    for relation1 in relationList:
-        for relation2 in relationList: #This if statement needs to check to make sure the keywords are the same, and the relation1 source is not from the same book as the relation2
-            if relation2.source == relation1.source and switcher == 0:
-                switcher = 1
-            elif relation1.source != relation2.source and relation1.keyword == relation2.keyword and switcher == 1:
-                weight1 = relation1.occurrences * (relation1.pages * 0.1)
-                weight2 = relation2.occurrences * (relation2.pages * 0.1)
-                connectedweight = computeWeight(weight2, weight1)
-                if(connectedweight >= 0.01):
-                    connectedList.append(ConnectedRelation(filenameFix(relation2.source), relation2.keyword, filenameFix(relation1.source), connectedweight))
-
-        switcher = 0
-
-    return connectedList
 
 def filenameFix(filename):
     filename = filename.replace("-", " ")
@@ -425,8 +337,10 @@ def getSentiment(entered_text):
 
 
     top_emotion = "fear"
-    for emotion in emotions:
-        if(emotions[top_emotion]<emotions[emotion]):
+    for emotion in emotions: #TODO TODO TODO just kinda toy with this and see what other emotions I can get out of the output
+                             #Email Milman about this and ask what he thinks of this constant trust/anticipation output. maybe provide
+                             #ideas about better emotional output
+        if(emotions[top_emotion]<emotions[emotion] and emotion != "trust" and emotion != "anticipation"):
             top_emotion = emotion
 
 
@@ -438,9 +352,6 @@ def getSentiment(entered_text):
         tone = "neutral"
 
     textural_emotion = tone + " " + top_emotion
-
-
-    print(textural_emotion)
 
     return textural_emotion
 
@@ -474,7 +385,6 @@ while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reade
             numOfFiles+=1
             key = sys.argv[argc]+"-"+(str)(count)
             path = filepath+"/"+key+".pdf"
-        print(path)
 
     #If the folder holding the chapters isn't found this prints out then continues running through.
     elif(not(os.path.exists(filepath)) and filepath == ("source/"+sys.argv[argc])):
@@ -489,7 +399,6 @@ print("--- %s loading files time seconds ---" % (time.time() - start_time))
 process_queue = []
 itemQueue = multiprocessing.Queue()
 clearItemDB()
-relationList = []
 activeProcesses = 0
 for key in rawFiles: #performs all the semantic actions in sequence
     p = multiprocessing.Process(target=semanticActions, args=(key, rawFiles[key][0],rawFiles[key][1], rawFiles[key][2], itemQueue,  ))
@@ -504,8 +413,7 @@ for key in rawFiles: #performs all the semantic actions in sequence
             else:
                 #print("Filling DB")
                 item = itemQueue.get()
-                fillItemDB(item[0])
-                relationList = relationList + item[1]
+                fillItemDB(item)
                 numOfFiles-=1
                 activeProcesses-=1
     else:
@@ -521,8 +429,7 @@ while numOfFiles > 0:#wait
     else:
         #print("Filling DB")
         item = itemQueue.get()
-        fillItemDB(item[0])
-        relationList = relationList + item[1]
+        fillItemDB(item)
         numOfFiles-=1
 
 #makes sure all the processes started above are killed before finishing the program.
@@ -530,13 +437,6 @@ for proc in process_queue:
     #print("terminate loop")
     proc.terminate()
 print("--- %s seconds to load all information in the databases ---" % (time.time() - start_time))
-
-#NOTE start of relation building
-
-fillRelationDB(makeRelations(relationList)) #creates the relations and fills a database with those relations
-
-print("--- %s seconds to create all relations ---" % (time.time() - start_time))
-
 #End of main code
 #########################
 
