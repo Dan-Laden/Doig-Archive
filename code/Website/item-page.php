@@ -21,6 +21,7 @@ SQL;
   $length = $row["Pages"];
   $book = $row["RelatedBook"];
   $img = $row["Img"];
+  $sentiment = $row["Emotion"];
   $geoloc = explode("; ", $row["Geolocation"]);
 ?>
 
@@ -70,16 +71,16 @@ SQL;
             </p></li>
 
             <!-- The abstract -->
-            <li><p class="metadata-abstract"><?php #TODO TODO TODO ?>
+            <li><p class="metadata-abstract">
               <strong>Raw Text Example </strong>
               <?php echo("<span class='metadata-field' property='name'>$text</span>"); ?>
             </p></li>
 
             <!-- The genre the item falls into -->
             <li><p class="metadata-genre">
-              <strong>Genre </strong>
+              <strong>Sentiment Value </strong>
               <span class="metadata-field" property="name">
-                Non-Fictional, Montana
+                <?php echo("<span class='metadata-field' property='name'>$sentiment</span>"); ?>
               </span>
             </p></li>
 
