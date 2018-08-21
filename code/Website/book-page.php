@@ -39,7 +39,7 @@ SQL;
   <meta charset="UTF-8">
   <title>MSU Archives</title>
   <link rel="stylesheet" type="text/css" href="css/global.css" />
-  <link rel="stylesheet" type="text/css" href="css/item-page.css" />
+  <link rel="stylesheet" type="text/css" href="css/book-page.css" />
 </head>
 <nav>
   <ul>
@@ -107,12 +107,16 @@ SQL;
         </div>
       </div>
       <div id="Bottom-Content">
-          <!-- This button lets users go back to the main collect rather than having to scroll back up -->
-          <a href="index.html">
-            <button id="menu-return">
-              Menu
-            </button>
-          </a>
+        <ul>
+          <li id="links">
+            <a class="contact" href="https://www.lib.montana.edu/digital/contact.php?_ga=2.146077181.811359499.1534877159-1076287462.1511386704" title="contact Montana State University (MSU) Library">Contact Us</a>
+          </li>
+
+          <li id="info">
+            © Copyright 2018
+            <span property="copyrightHolder publisher"><a href="https://www.lib.montana.edu/digital/">Montana State University (MSU) Library</a></span>
+          </li>
+        </ul>
         </div>
       </div>
     </div>
@@ -126,7 +130,6 @@ function goBack() {
     window.history.back();
 }
 </script>
-
 
 <!--https://stackoverflow.com/questions/871858/php-pass-variable-to-next-page-->
 <!--https://www.acunetix.com/blog/articles/prevent-sql-injection-vulnerabilities-in-php-applications/-->

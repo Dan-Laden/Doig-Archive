@@ -102,19 +102,21 @@ HEREDOC;
 
 
       </div>
-      <div id="Bottom-Content">
+      <div id="Bottom-Content"> <!-- Code from original https://arc.lib.montana.edu/ivan-doig/item pages -->
+        <ul>
+          <li id="links">
+            <a class="contact" href="https://www.lib.montana.edu/digital/contact.php?_ga=2.146077181.811359499.1534877159-1076287462.1511386704" title="contact Montana State University (MSU) Library">Contact Us</a>
+          </li>
 
-        <!-- This button lets users go back to the main collect rather than having to scroll back up -->
-        <a href="index.html">
-          <button id="menu-return">
-            Menu
-          </button>
-        </a>
+          <li id="info">
+            © Copyright 2018
+            <span property="copyrightHolder publisher"><a href="https://www.lib.montana.edu/digital/">Montana State University (MSU) Library</a></span>
+          </li>
+        </ul>
       </div>
     </div>
   </div>
 </body>
-
 <!-- This is built in js for letting the user jump back to their previous page -->
 <script>
 function goBack() {

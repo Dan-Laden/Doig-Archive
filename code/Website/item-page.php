@@ -150,13 +150,18 @@ SQL;
             <img src="img/related2.jpg" alt="Book related to This House of Sky">
             <img src="img/related3.jpg" alt="Book related to This House of Sky">
           </div>
+        </div>
+        <div id="Link-Content">
+          <ul>
+            <li id="links">
+              <a class="contact" href="http://www.lib.montana.edu/digital/contact.html?_ga=2.71626970.811359499.1534877159-1076287462.1511386704" title="contact Montana State University (MSU) Library">Contact Us</a>
+            </li>
 
-          <!-- This button lets users go back to the main collect rather than having to scroll back up -->
-          <a href="index.html">
-            <button id="menu-return">
-              Menu
-            </button>
-          </a>
+            <li id="info">
+              © Copyright 2018
+              <span property="copyrightHolder publisher"><a href="https://www.lib.montana.edu/digital/">Montana State University (MSU) Library</a></span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -164,13 +169,13 @@ SQL;
 </body>
 </html>
 
+
 <!-- This is built in js for letting the user jump back to their previous page -->
 <script>
 function goBack() {
     window.history.back();
 }
 </script>
-
 
 <!--https://stackoverflow.com/questions/15481911/linking-to-a-specific-part-of-a-web-page -->
 <!--https://stackoverflow.com/questions/5456626/php-pdo-returning-single-row-->
