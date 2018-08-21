@@ -8,6 +8,7 @@ nav ul {
   background-color: #f3f3f3;
   top: 0;
   width: 100%;
+  position: fixed;
 }
 a {color:inherit;}
 nav ul li a{
@@ -31,21 +32,37 @@ nav ul li a:hover {
 }
 #Content{
   padding: 1%;
-  background: red;
+  background: lightgrey;
 }
 #Top-Content{
   background: yellow;
 }
 
 #Bottom-Content{
-  background: orange;
+  background: grey;
 }
-#menu-return
-{
-  padding: 25px 20px;
-  border-radius: 25%;
+
+/*<!-- Code from original https://arc.lib.montana.edu/ivan-doig/item pages -->*/
+#Bottom-Content ul {
+    clear: both;
+    padding: 10px 0;
+    width: 100%;
+    margin: 0;
+    font-size: 0.85em;
+    border-top: 1px solid #ecebeb;
 }
-#menu-return:hover{
-    background-color: #333;
-    color: white;
+
+#Bottom-Content ul li#links {
+    float: left;
+    width: auto;
+}
+#Bottom-Content  ul li#info {
+    float: right;
+    width: auto;
+}
+#Bottom-Content  ul li {
+    display: inline;
+    list-style: none;
+    margin: 0;
+    padding: 3px 7px;
 }
