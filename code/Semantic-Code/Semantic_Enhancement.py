@@ -131,6 +131,8 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     #write general text to a .txt file
     filetypes = ["Raw", "Keywords", "Geolocations"]
 
+    sentiment = getSentiment(rawtext)
+
     keywordlist_text = ""
     keywordlist_db = ""
     for keywords in keylist:
@@ -139,6 +141,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
                 keywordlist_db = keywordlist_db + key[0] +"; "
                 keywordlist_text = keywordlist_text + key[0] + "|" + (str)(key[1]) + "; "
 
+    keywordlist_text = keywordlist_text + sentiment + "|" + "SENTIMENT"+"; "
     geolocation = ""
     for geoloc in geolocations:
         geolocation = geolocation + geoloc.address + "; "
@@ -176,7 +179,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
 
 
     #puts the database item in a queue to be pulled later
-    queue.put(Item(filename, rawtext, keywordlist_db, pages, source, geolocation, img, getSentiment(rawtext)))
+    queue.put(Item(filename, rawtext, keywordlist_db, pages, source, geolocation, img, sentiment))
     print("Output for "+filename+" finished")
 
 #This method fills the database with a new item from the itemQueue
