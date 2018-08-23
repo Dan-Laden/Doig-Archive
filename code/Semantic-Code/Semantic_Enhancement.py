@@ -109,11 +109,13 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     #write general text to a .txt file
     filetypes = ["Raw", "Keywords", "Geolocations"]
 
-    keywordlist = ""
+    keywordlist_text = ""
+    keywordlist_db = ""
     for keywords in keylist:
         for key in keywords:
             if(key[1]>1):
-                keywordlist = keywordlist + key[0] + "|" + (str)(key[1]) + "; "
+                keywordlist_db = keywordlist_db + key[0] +"; "
+                keywordlist_text = keywordlist_text + key[0] + "|" + (str)(key[1]) + "; "
 
     geolocation = ""
     for geoloc in geolocations:
@@ -123,7 +125,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     #outputs rawtext, keywords, and geolocations to text files
     for types in filetypes:
         #NOTE If larger books are inserted this might need to be changed if chapters go over 3 digits and so on to catch all cases
-        try:
+        try: #some-file-14   len(filename) will get "-14" which is a negative number if it's some-file-1 it will get "e-1" which isn't a number
             value = (int)(filename[(len(filename))-3:])
             path = "output/"+filename[:(len(filename))-3]+"/"+types+"/"+types+"-"+filename+".txt"
         except ValueError:
@@ -134,7 +136,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
         if(types == "Raw"):
             f.write(rawtext)
         elif(types == "Keywords"):
-            f.write(keywordlist)
+            f.write(keywordlist_text)
         else:
             f.write(geolocation)
 
@@ -152,7 +154,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
 
 
     #puts the database item in a queue to be pulled later
-    queue.put(Item(filename, rawtext, keywordlist, pages, source, geolocation, img, getSentiment(rawtext)))
+    queue.put(Item(filename, rawtext, keywordlist_db, pages, source, geolocation, img, getSentiment(rawtext)))
     print("Output for "+filename+" finished")
 
 #This method fills the database with a new item from the itemQueue
@@ -162,10 +164,15 @@ def fillItemDB(item):
 
     sql_addto = """INSERT INTO ITEMS (ID, RawText, Keyword, Pages, RelatedBook, Geolocation, Img, Emotion)
     VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}');""".format(item.ID, item.rawText, item.keywords, item.pages, item.relatedBook, item.geolocations, item.img, item.emotion)
-    cursor.execute(sql_addto)
 
-    # necessary for saving changes made
-    connection.commit()
+    try:
+        cursor.execute(sql_addto)
+
+        # necessary for saving changes made
+        connection.commit()
+
+    except:
+        print("ERROR: "+item.ID+" already exists in item.db")
 
     connection.close()
 
@@ -336,7 +343,7 @@ def getSentiment(entered_text):
             positivity_rating = positivity_rating + emotion_dictionary[word]["positive"] - emotion_dictionary[word]["negative"]
 
 
-    top_emotion = "fear"
+    top_emotion = "trust"
     for emotion in emotions: #TODO TODO TODO just kinda toy with this and see what other emotions I can get out of the output
                              #Email Milman about this and ask what he thinks of this constant trust/anticipation output. maybe provide
                              #ideas about better emotional output
@@ -351,6 +358,9 @@ def getSentiment(entered_text):
     else:
         tone = "neutral"
 
+    if(top_emotion == "trust"):
+        top_emotion = "apathetic"
+
     textural_emotion = tone + " " + top_emotion
 
     return textural_emotion
@@ -364,14 +374,28 @@ def getSentiment(entered_text):
 numOfFiles = 0 #keeps track of how many files have been loaded in the program
 nameOfFiles = []
 rawFiles = {}
-argc = 1 #for all the directories to go into
-if(argc == len(sys.argv)):#If this program gets no directories to use it immediately exits
+argc = 2 #for all the directories to go into
+if((sys.argv[1] != "--new" and sys.argv[1] != "--old")  or argc > len(sys.argv)):
+    print("========Semantic_Enhancement.py========\n\n"+
+          "This program runs by using python3, and example input that is valid follows\n"+
+          "python3 Semantic_Enhancement.py --new example_folder_1 example_folder_2\n\n"+
+          "Run Options:\n\n"+
+          "--new\n"+
+          "For first time runs, this will create a database for the program to store data the program will also clear "+
+          "a database if one exists already giving it a fresh new state.\n\n"+
+          "--old\n"+
+          "For runs after creating a database, this is for adding to a database without erasing old data. "+
+          "Any new folders to parse should run using this command.\n\n"+
+          "========Semantic_Enhancement.py========\n")
+    exit()
+elif(argc == len(sys.argv)):#If this program gets no directories to use it immediately exits
     print("Please include files to parse")
     exit()
+
 while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reader.
     count = 1 #Due to naming conventions all chapters of books will be source/[bookname]/[bookname]-[chapter number]
     filepath = "source/"+sys.argv[argc]#NOTE: you should enter the directory you have the files you want to parse inside
-    if(os.path.exists(filepath)):      #      the directory should contained numbered pdf files with the same name as the directory
+    if(os.path.exists(filepath)):      #the directory should contained numbered pdf files with the same name as the directory
         key = sys.argv[argc]+"-"+(str)(count)
         nameOfFiles.append(key)
         path = filepath+"/"+key+".pdf"
@@ -398,7 +422,8 @@ print("--- %s loading files time seconds ---" % (time.time() - start_time))
 
 process_queue = []
 itemQueue = multiprocessing.Queue()
-clearItemDB()
+if(sys.argv[1] == "--new"):
+    clearItemDB()
 activeProcesses = 0
 for key in rawFiles: #performs all the semantic actions in sequence
     p = multiprocessing.Process(target=semanticActions, args=(key, rawFiles[key][0],rawFiles[key][1], rawFiles[key][2], itemQueue,  ))
