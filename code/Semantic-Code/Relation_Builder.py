@@ -8,6 +8,8 @@ import time
 start_time = time.time()
 
 import sqlite3 #ref doc: https://docs.python.org/3/library/sqlite3.html
+import os #ref doc: https://docs.python.org/3.6/library/os.html
+import glob #ref doc: https://docs.python.org/3.7/library/glob.html#module-glob
 
 #########################
 #Main classes for relation building
@@ -127,10 +129,22 @@ def makeRelations(relationList):
 # it should be tacked on to the end of the keyword output so when you click on the sentiment mood it can use the same keyword
 # php post key
 
-for keywords in keylist:
-    for key in keywords:
-        if(key[1]>1):
-            keywordlist = keywordlist + key[0] + "; "
+for filepath in os.listdir('output'):
+    path = "output/"+filepath+"/Keywords/*.txt"
+    files = glob.glob(path)
+    for fullpath in files:
+        f = open(fullpath, 'rb')
+        keywords = f.read()
+        keywordlist = keywords.split('; ')
+        keywordlist.pop() #to removed the empty string at the end of the list
+
+    #TODO I have all the files now
+    #import sqlite3
+    #conn = sqlite3.connect('example.db')
+    #c = conn.cursor()
+    #for row in c.execute('SELECT * FROM stocks ORDER BY price'):
+        #print row
+
 
 relationList #list of Related objects
 
@@ -138,4 +152,10 @@ relationList #list of Related objects
 print("--- %s seconds to create all relations ---" % (time.time() - start_time))
 
 #End of main code
+#########################
+
+#########################
+#resources used for code so far
+#
+#https://www.quora.com/How-do-I-read-mutiple-txt-files-from-folder-in-python#
 #########################
