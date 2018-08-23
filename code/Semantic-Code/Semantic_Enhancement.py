@@ -36,6 +36,28 @@ PROCESS_LIMIT = 30
 #End of Global variables
 #########################
 
+#########################
+#Main classes for relation building
+
+#This is the python object that holds everything for a database entry
+class Item:#For database usage
+    def __init__(self, inID, inRawText, inKeywords, inPages, inRelatedBook, inGeolocations, inImg, inEmotion):
+        self.ID = inID
+        self.rawText = inRawText
+        self.keywords = inKeywords
+        self.pages = inPages
+        self.relatedBook = inRelatedBook
+        self.geolocations = inGeolocations
+        self.img = inImg
+        self.emotion = inEmotion
+
+class Geothing:#For testing until geonames gets sorted out
+    def __init__(self):
+        self.address = "placeholder"
+
+#End of class for semantic enhancement
+#########################
+
 
 #########################
 #Main functions for data parsing
@@ -208,19 +230,6 @@ def clearItemDB():
 
     connection.close()
 
-#This is the python object that holds everything for a database entry
-class Item:#For database usage
-    def __init__(self, inID, inRawText, inKeywords, inPages, inRelatedBook, inGeolocations, inImg, inEmotion):
-        self.ID = inID
-        self.rawText = inRawText
-        self.keywords = inKeywords
-        self.pages = inPages
-        self.relatedBook = inRelatedBook
-        self.geolocations = inGeolocations
-        self.img = inImg
-        self.emotion = inEmotion
-
-
 
 #This function creates a list of compound places to iterate through for locational checking.
 #Creates two or more string tokens
@@ -240,12 +249,8 @@ def multiwordPlace(POStext):
 
     return compoundLoc
 
-class Geothing:#For testing until geonames gets sorted out
-    def __init__(self):
-        self.address = "placeholder"
-
 #This function takes in a list of places and tries it's best to locate what is possibly a match
-def geoServer(listPlaces):
+def geoServer(listPlaces): #TODO #TODO #TODO
     #Using Geopy for geolocations
     GeoNamesAccounts = ["semantic_1", "semantic_2", "semantic_3", "semantic_4", "semantic_5", "semantic_6", "semantic_7", "semantic_8", "semantic_9", "semantic_10", "semantic_11", "semantic_12"]
     geolocator = GeoNames(username="dan_laden")
