@@ -9,7 +9,9 @@ start_time = time.time()
 
 import sqlite3 #ref doc: https://docs.python.org/3/library/sqlite3.html
 import os #ref doc: https://docs.python.org/3.6/library/os.html
+import string #ref doc: https://docs.python.org/3.3/library/string.html?highlight=string#module-string
 import glob #ref doc: https://docs.python.org/3.7/library/glob.html#module-glob
+import re #ref doc: https://docs.python.org/3/library/re.html#re.ASCII
 
 #########################
 #Main classes for relation building
@@ -94,6 +96,18 @@ def grabRelations(inRelationList, fileName):
 
     return relationList
 
+#Get the name of the file and then use the converter from Semantic_Enhancement to get the way it's written in the db
+def getDBname(path):
+    path = path.split("/Keywords/")
+    path = path[1]
+    path = path.replace("Keywords-", '')
+    path = path.replace(".txt", '')
+    path = path.replace("-", " ")
+    digits = re.findall('\d+', path)#I'm using regular expressions instead of forloops because I think that's faster proformance
+    digit = digits[0]
+    source = path.replace((" "+digit), "")
+    return(path.replace((" "+digit), (", Chapter "+digit)))
+
 #This function takes a list of read in files from the program and creates a "graph" of biconnected ConnectedRelation objects
 def makeRelations(relationList):
     connectedList = []
@@ -105,12 +119,15 @@ def makeRelations(relationList):
             if relation2.source == relation1.source and switcher == 0:
                 switcher = 1
             elif relation1.source != relation2.source and relation1.keyword == relation2.keyword and switcher == 1:
-                weight1 = relation1.occurrences * (relation1.pages * 0.1)
-                weight2 = relation2.occurrences * (relation2.pages * 0.1)
-                connectedweight = computeWeight(weight2, weight1)
-                if(connectedweight >= 0.01):
-                    connectedList.append(ConnectedRelation(filenameFix(relation2.source), relation2.keyword, filenameFix(relation1.source), connectedweight))
+                try:
+                    weight1 = (int)(relation1.occurrences) * (relation1.pages * 0.1)
+                    weight2 = (int)(relation2.occurrences) * (relation2.pages * 0.1)
+                    connectedweight = computeWeight(weight2, weight1)
+                except:
+                    connectedweight = 1
 
+                if(connectedweight >= 0.01):
+                    connectedList.append(ConnectedRelation(relation2.source, relation2.keyword, relation1.source, connectedweight))
         switcher = 0
 
     return connectedList
@@ -129,27 +146,42 @@ def makeRelations(relationList):
 # it should be tacked on to the end of the keyword output so when you click on the sentiment mood it can use the same keyword
 # php post key
 
+relationList = []
 for filepath in os.listdir('output'):
     path = "output/"+filepath+"/Keywords/*.txt"
     files = glob.glob(path)
     for fullpath in files:
-        f = open(fullpath, 'rb')
-        keywords = f.read()
+        f = open(fullpath, 'r')
+        keywords = f.readline()
         keywordlist = keywords.split('; ')
         keywordlist.pop() #to removed the empty string at the end of the list
 
-    #TODO I have all the files now
-    #import sqlite3
-    #conn = sqlite3.connect('example.db')
-    #c = conn.cursor()
-    #for row in c.execute('SELECT * FROM stocks ORDER BY price'):
-        #print row
+        occurenceList ={}
+        for keyword in keywordlist:
+            keyword = keyword.split("|")
+            occurenceList[keyword[0]] = keyword[1]
 
 
-relationList #list of Related objects
+        chapter = getDBname(fullpath)
+        print(chapter)
+        conn = sqlite3.connect('items.db')
+        c = conn.cursor()
+        sqlget = """SELECT Pages from ITEMS
+        WHERE ID='{0}';""".format(chapter)
+        for row in c.execute(sqlget):
+            pages = row[0]
+        conn.close()
+        print(pages)
 
+        for keyword in occurenceList:
+            relationList.append(Relation(chapter, keyword, occurenceList[keyword], pages))
 
 print("--- %s seconds to create all relations ---" % (time.time() - start_time))
+
+#NOTE start of relation building
+fillRelationDB(makeRelations(relationList)) #creates the relations and fills a database with those relations
+
+print("--- %s seconds to connect all relations ---" % (time.time() - start_time))
 
 #End of main code
 #########################
