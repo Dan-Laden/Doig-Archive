@@ -169,11 +169,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
 
     #This creates the "Proper" file names to be used in the dynamic pages
     #filename is the title of the book while source is the related book
-    filename = filename.replace("-", " ")
-    digits = re.findall('\d+', filename)#I'm using regular expressions instead of forloops because I think that's faster proformance
-    digit = digits[0]
-    source = filename.replace((" "+digit), "")
-    filename = filename.replace((" "+digit), (", Chapter "+digit))
+    filename = filenameFix(filename)
     img = "img/"+source+"/"+digit+".png"
     img = img.replace((" "), "-")
 
