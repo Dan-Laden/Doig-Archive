@@ -78,15 +78,15 @@ SQL;
             <li><p class="metadata-chapters"><?php #TODO TODO TODO ?>
               <strong>Chapters</strong>
               <!--echo("<span class='metadata-field' property='name'>$text</span>"); -->
-              <ul>
-              <?php
-                foreach ($rows as $row)
-                {
-                  $url = "item-page.php?item=".$row[0];
-                  echo("<li><a href='$url'>$row[0]</a></li>");
-                }
-              ?>
-              </ul>
+              <div class="grid">
+                <?php
+                  foreach ($rows as $row)
+                  {
+                    $url = "item-page.php?item=".$row[0];
+                    echo("<ul><li><a href='$url'>$row[0]</a></li></ul>");
+                  }
+                ?>
+              </div>
             </p></li>
 
             <!-- The page length of the document -->
