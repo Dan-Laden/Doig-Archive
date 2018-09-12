@@ -11,7 +11,9 @@ import nltk #ref doc: http://www.nltk.org/howto/index.html
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.corpus import words
-from nltk  import FreqDist
+from nltk import FreqDist
+from nltk.stem import PorterStemmer
+from nltk.tokenize import sent_tokenize, word_tokenize
 import string #ref doc: https://docs.python.org/3.3/library/string.html?highlight=string#module-string
 import re #ref doc: https://docs.python.org/3/library/re.html#re.ASCII
 import PyPDF2 #ref doc: https://pythonhosted.org/PyPDF2/
@@ -30,8 +32,12 @@ stoplist = set(stopwords.words('english'))#set of all stopwords in english thank
 #Global variables
 global numOfPlaces
 global PROCESS_LIMIT
+global MINIMAL_VERB
+global MINIMAL_NOUN
 
 PROCESS_LIMIT = 30
+MINIMAL_VERB = 10
+MINIMAL_NOUN = 5
 
 #End of Global variables
 #########################
@@ -103,6 +109,7 @@ def keywordGenerator(POStext):
     keywordsNN = []
     keywordsVB = []
     keywordsNN2chr = [] #For testing and debate on weither or not to include 2 character strings as nouns
+    ps = PorterStemmer() #This checks verb forms to make sure it's the root instead of anything 'ing' 's' 'es' or additional verb fluff
     for token in POStext:
         noun = re.compile('NN(\S*)')#Looks for any POS labeled NN* NN with any variation on it
         verb = re.compile('VB(\S*)')#Looks for any POS labled VB* VB with any variation on it
@@ -115,8 +122,32 @@ def keywordGenerator(POStext):
                     keywordsNN.append(token[0])
         elif verb.match(token[1]):
             if not(doig.match(token[0])):
-                keywordsVB.append(token[0])
-    return (KeywordCounter(keywordsNN), KeywordCounter(keywordsVB))
+                verb = ps.stem(token[0]) #get the stem of the verb
+                keywordsVB.append(verb)
+
+
+    keywordsNN = KeywordCounter(keywordsNN)
+    keywordsVB = KeywordCounter(keywordsVB)
+
+    #All forloops here are for removing nouns and verbs that don't fall into the threshold values
+    keywordsNNremove = []
+    keywordsVBremove = []#first two loops are for gathering what to remove
+    for keyword in keywordsNN:
+        if keyword[1] < MINIMAL_NOUN and not keyword[0].isupper():#isupper() is needed so we don't remove proper nouns since common nouns have less value
+            keywordsNNremove.append(keyword)
+
+    for keyword in keywordsVB:
+        if keyword[1] < MINIMAL_VERB:
+            keywordsVBremove.append(keyword)
+
+    #last two loops are for removing from the main keyword lists
+    for keyword in keywordsNNremove:
+        keywordsNN.remove(keyword)
+
+    for keyword in keywordsVBremove:
+        keywordsVB.remove(keyword)
+
+    return (keywordsNN, keywordsVB)#TODO Output this differently to fix nouns and verbs
 
 #This creates a frequency dictionary for the number of occurences in the keywordList and returns them ordered by number of occurences
 def KeywordCounter(keywordList):
@@ -137,9 +168,8 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     keywordlist_db = ""
     for keywords in keylist:
         for key in keywords:
-            if(key[1]>1):
-                keywordlist_db = keywordlist_db + key[0] +"; "
-                keywordlist_text = keywordlist_text + key[0] + "|" + (str)(key[1]) + "; "
+            keywordlist_db = keywordlist_db + key[0] +"; "
+            keywordlist_text = keywordlist_text + key[0] + "|" + (str)(key[1]) + "; "
 
     keywordlist_text = keywordlist_text + sentiment + "|" + "SENTIMENT"+"; "
     geolocation = ""
@@ -154,6 +184,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
             value = (int)(filename[(len(filename))-3:])
             path = "output/"+filename[:(len(filename))-3]+"/"+types+"/"+types+"-"+filename+".txt"
         except ValueError:
+            value = (int)(filename[(len(filename))-2:])
             path = "output/"+filename[:(len(filename))-2]+"/"+types+"/"+types+"-"+filename+".txt"
         makedir(path)
         f = open(path, "w")
@@ -170,7 +201,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     #This creates the "Proper" file names to be used in the dynamic pages
     #filename is the title of the book while source is the related book
     filename = filenameFix(filename)
-    img = "img/"+source+"/"+digit+".png"
+    img = "img/"+source+"/"+(str)(value)+".png"
     img = img.replace((" "), "-")
 
 
@@ -487,4 +518,6 @@ print("--- %s seconds ---" % (time.time() - start_time))
 # https://stackoverflow.com/questions/4289331/python-extract-numbers-from-a-string
 # https://www.tutorialspoint.com/python/string_replace.htm
 # https://stackoverflow.com/questions/11520492/difference-between-del-remove-and-pop-on-lists
+# https://stackoverflow.com/questions/7353968/checking-if-first-letter-of-string-is-in-uppercase/7354011
+# https://pythonspot.com/nltk-stemming/ for the PorterStemmer
 #########################
