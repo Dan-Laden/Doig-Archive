@@ -56,11 +56,6 @@ class Item:#For database usage
         self.geolocations = inGeolocations
         self.img = inImg
         self.emotion = inEmotion
-
-class Geothing:#For testing until geonames gets sorted out
-    def __init__(self):
-        self.address = "placeholder"
-
 #End of class for semantic enhancement
 #########################
 
@@ -279,35 +274,6 @@ def multiwordPlace(POStext):
 
     return compoundLoc
 
-#This function takes in a list of places and tries it's best to locate what is possibly a match
-def geoServer(listPlaces): #TODO #TODO #TODO
-    #Using Geopy for geolocations
-    GeoNamesAccounts = ["semantic_1", "semantic_2", "semantic_3", "semantic_4", "semantic_5", "semantic_6", "semantic_7", "semantic_8", "semantic_9", "semantic_10", "semantic_11", "semantic_12"]
-    geolocator = GeoNames(username="dan_laden")
-    geolocations = []
-    process_queue = []
-    numOfPlaces = 0 #keeps track of how many places are caught by the geolocator for the queue extraction
-    queue = multiprocessing.Queue()
-    for loc in listPlaces: #TODO next change with a list of accounts to login with
-        #p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue, geolocator))
-        #p.start()
-        #process_queue.append(p)
-        geolocations.append(Geothing())#For now this has a placeholder class till XXX usage of this API is resolved
-
-    #makes sure all the processes started above are killed before finishing the program.
-    time.sleep(30)
-    while numOfPlaces > 0:#wait
-        if queue.empty():
-            print("Nothing in queue")
-            time.sleep(0.1)
-        else:
-            geolocations.append(queue.get())
-            numOfPlaces-=1
-
-    for proc in process_queue:
-        proc.terminate()
-
-    return geolocations
 
 #This takes a list and converts is into a string
 #This function goes along with stripNonAlphaNumASCII since it returns a list normally
@@ -319,15 +285,30 @@ def listToString(list):
 
 
 #This function is used by a multiprocessing queue in geoServer. This is where all locations are resolved
-def geoLocate(location, queue, geoloc):
-    geo = geoloc.geocode(location, timeout=20)
-    if not geo == None:
-        if not "MT" in geo.address:
-            locMT = location+ " MT"
-            geo = geoloc.geocode(locMT, timeout=20)
-        if not geo == None and "MT" in geo.address:
-            queue.put(geo)
-            numOfPlaces+=1
+def geoLocate(list_of_places):
+    #Using Geopy for geolocations NOTE this works
+    GeoNamesAccounts = ["semantic_1", "semantic_2", "semantic_3", "semantic_4", "semantic_5", "semantic_6", "semantic_7", "semantic_8", "semantic_9", "semantic_10", "semantic_11", "semantic_12"]
+    index = 0
+    counter = 1
+    geolocations = []
+    geolocator = GeoNames(username=GeoNamesAccounts[index])
+    for place in list_of_places:
+        if counter >= 500:
+            index +=1
+            geolocator = GeoNames(username=GeoNamesAccounts[index])
+            coutner = 1
+
+        geo = geoloc.geocode(place, timeout=10)
+        if not geo == None:
+            if not "MT" in geo.address:
+                locMT = place+ " MT"
+                geo = geolocator.geocode(locMT, timeout=10)
+            if not geo == None and "MT" in geo.address:
+                geolocations.append(geo)
+        counter += 1
+
+    return geolocations
+
 
 
 #NOTE: not my code this is from: https://stackoverflow.com/a/12517490/8967976
