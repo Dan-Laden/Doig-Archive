@@ -163,7 +163,6 @@ for filepath in os.listdir('output'):
 
 
         chapter = getDBname(fullpath)
-        print(chapter)
         conn = sqlite3.connect('items.db')
         c = conn.cursor()
         sqlget = """SELECT Pages from ITEMS
@@ -171,7 +170,6 @@ for filepath in os.listdir('output'):
         for row in c.execute(sqlget):
             pages = row[0]
         conn.close()
-        print(pages)
 
         for keyword in occurenceList:
             relationList.append(Relation(chapter, keyword, occurenceList[keyword], pages))
