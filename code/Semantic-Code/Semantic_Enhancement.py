@@ -24,10 +24,12 @@ import os #ref doc: https://docs.python.org/3.6/library/os.html
 import sqlite3 #ref doc: https://docs.python.org/3/library/sqlite3.html
 import errno #ref doc: https://docs.python.org/3.6/library/errno.html
 import operator #ref doc: https://docs.python.org/3/library/operator.html
+import random #ref doc: https://docs.python.org/3.7/library/random.html#random.choice
 from geopy.geocoders import GeoNames #ref doc: http://geopy.readthedocs.io/en/stable/#
 
 stoplist = set(stopwords.words('english'))#set of all stopwords in english thanks to nltk
 
+print (sys.argv)
 #########################
 #Global variables
 global numOfPlaces
@@ -64,11 +66,11 @@ class Item:#For database usage
 #Main functions for data parsing
 
 #Main function that executes all the functions before for parsing, dividing, and serving up enriched text.
-def semanticActions(key, text, pages, source, queue):
+def semanticActions(key, text, pages, source, locations, queue):
     tokens = POStagging(text)
     keywords = keywordGenerator(tokens)
     places = multiwordPlace(tokens)
-    geoplaces = geoServer(places)
+    geoplaces = geoLocate(places, locations)
     output(key, text, keywords, geoplaces, pages, source, queue)
 
 #This function reads in text from a pdf and returns it without punctuation
@@ -285,26 +287,49 @@ def listToString(list):
 
 
 #This function is used by a multiprocessing queue in geoServer. This is where all locations are resolved
-def geoLocate(list_of_places):
+def geoLocate(list_of_places, list_of_locations):
     #Using Geopy for geolocations NOTE this works
-    GeoNamesAccounts = ["semantic_1", "semantic_2", "semantic_3", "semantic_4", "semantic_5", "semantic_6", "semantic_7", "semantic_8", "semantic_9", "semantic_10", "semantic_11", "semantic_12"]
-    index = 0
+    GeoNamesAccounts = ["semantic_1", "semantic_2", "semantic_3", "semantic_4", "semantic_5", "semantic_6"]
     counter = 1
     geolocations = []
-    geolocator = GeoNames(username=GeoNamesAccounts[index])
+    choice = random.choice(GeoNamesAccounts)
+    GeoNamesAccounts.remove(choice)
+    geolocator = GeoNames(username=choice)
     for place in list_of_places:
         if counter >= 500:
-            index +=1
-            geolocator = GeoNames(username=GeoNamesAccounts[index])
+            choice = random.choice(GeoNamesAccounts)
+            GeoNamesAccounts.remove(choice)
+            geolocator = GeoNames(username=choice)
             coutner = 1
 
-        geo = geoloc.geocode(place, timeout=10)
-        if not geo == None:
-            if not "MT" in geo.address:
-                locMT = place+ " MT"
-                geo = geolocator.geocode(locMT, timeout=10)
-            if not geo == None and "MT" in geo.address:
-                geolocations.append(geo)
+        try:
+            geo = geolocator.geocode(place, timeout=30)
+            retrieved = False
+            index = 0
+            while not geo == None:
+                for location in list_of_locations:
+                    if not location in geo.address:
+                        continue
+                    if location in geo.address:
+                        retrieved = True
+                        geolocations.append(geo)
+                        break
+
+                if index >= len(list_of_locations):
+                    break
+                elif not retrieved:
+                    new_place = place + list_of_locations[index]
+                    index+=1
+                    try:
+                        geo = geolocator.geocode(new_place, timeout=30)
+                    except:
+                        pass
+        except:
+            continue
+
+
+
+            #append location onto place and recheck if it comes up with anything before timeout
         counter += 1
 
     return geolocations
@@ -408,30 +433,41 @@ elif(argc == len(sys.argv)):#If this program gets no directories to use it immed
     print("Please include files to parse")
     exit()
 
+
+
 while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reader.
+    locations = []
     count = 1 #Due to naming conventions all chapters of books will be source/[bookname]/[bookname]-[chapter number]
     filepath = "source/"+sys.argv[argc]#NOTE: you should enter the directory you have the files you want to parse inside
     if(os.path.exists(filepath)):      #the directory should contained numbered pdf files with the same name as the directory
         key = sys.argv[argc]+"-"+(str)(count)
+        rawName = sys.argv[argc]
         nameOfFiles.append(key)
         path = filepath+"/"+key+".pdf"
+        print(sys.argv[argc])
+        argc+=1
         while(os.path.exists(path)):
-            f = open(path, 'rb')
+            f = open(path, 'rb')#trying to use location as part of the filesystem
             pdf = PyPDF2.PdfFileReader(f)
             pages = pdf.getNumPages()
             rawText = readText(pdf)
-            rawFiles[key] = (rawText, pages, sys.argv[argc]) #Reads in the text then puts it in a dictionary with a lable of the filename.
+            while argc<len(sys.argv) and "-" not in sys.argv[argc]:
+                locations.append(sys.argv[argc].replace(("_"), " "))
+                print("Location: "+sys.argv[argc])
+                argc+=1
+
+            rawFiles[key] = (rawText, pages, rawName, locations) #Reads in the text then puts it in a dictionary with a lable of the filename.
             count+=1
             numOfFiles+=1
-            key = sys.argv[argc]+"-"+(str)(count)
+            key = rawName+"-"+(str)(count)
             path = filepath+"/"+key+".pdf"
 
     #If the folder holding the chapters isn't found this prints out then continues running through.
     elif(not(os.path.exists(filepath)) and filepath == ("source/"+sys.argv[argc])):
         print(sys.argv[argc]+" is not a valid directory please try again next run")
+        argc+=1
 
 
-    argc+=1
 
 print("--- %s loading files time seconds ---" % (time.time() - start_time))
 
@@ -442,7 +478,7 @@ if(sys.argv[1] == "--new"):
     clearItemDB()
 activeProcesses = 0
 for key in rawFiles: #performs all the semantic actions in sequence
-    p = multiprocessing.Process(target=semanticActions, args=(key, rawFiles[key][0],rawFiles[key][1], rawFiles[key][2], itemQueue,  ))
+    p = multiprocessing.Process(target=semanticActions, args=(key, rawFiles[key][0],rawFiles[key][1], rawFiles[key][2], rawFiles[key][3], itemQueue,  ))
     p.start()
     process_queue.append(p)
     if activeProcesses > PROCESS_LIMIT: #stops the program from creating more processes and killing the system
@@ -501,4 +537,5 @@ print("--- %s seconds ---" % (time.time() - start_time))
 # https://stackoverflow.com/questions/11520492/difference-between-del-remove-and-pop-on-lists
 # https://stackoverflow.com/questions/7353968/checking-if-first-letter-of-string-is-in-uppercase/7354011
 # https://pythonspot.com/nltk-stemming/ for the PorterStemmer
+# https://stackoverflow.com/questions/306400/how-to-randomly-select-an-item-from-a-list
 #########################
