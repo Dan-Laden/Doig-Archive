@@ -11,6 +11,6 @@ English-Creek : MT Gros_Ventre
 Ride-with-me-Mariah-Montana : MT Gros_Ventre
 The-Sea-Runners : AK OR WA BC
 Work-Song : Butte_MT
-Bartenders-Tale : Gros_Ventre Fort_Peck MT AZ Canada
+The-Bartenders-Tale : Gros_Ventre Fort_Peck MT AZ Canada
 The-Whistling-Season : MT IL
 Sweet-Thunder : Butte_MT Helena_MT

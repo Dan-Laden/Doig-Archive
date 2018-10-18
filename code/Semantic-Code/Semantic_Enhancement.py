@@ -290,14 +290,20 @@ def listToString(list):
 def geoLocate(list_of_places, list_of_locations):
     #Using Geopy for geolocations NOTE this works
     GeoNamesAccounts = ["semantic_1", "semantic_2", "semantic_3", "semantic_4", "semantic_5", "semantic_6"]
+    holder = []
+    holder = holder + GeoNamesAccounts
     counter = 1
     geolocations = []
     choice = random.choice(GeoNamesAccounts)
     GeoNamesAccounts.remove(choice)
     geolocator = GeoNames(username=choice)
     for place in list_of_places:
-        if counter >= 500:
-            choice = random.choice(GeoNamesAccounts)
+        if counter >= 1500:
+            try:
+                choice = random.choice(GeoNamesAccounts)
+            except:
+                GeoNamesAccounts = holder + GeoNamesAccounts
+                choice = random.choice(GeoNamesAccounts)
             GeoNamesAccounts.remove(choice)
             geolocator = GeoNames(username=choice)
             coutner = 1
