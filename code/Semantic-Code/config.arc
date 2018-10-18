@@ -1,7 +1,7 @@
 This-House-of-Sky : MT
 Winter-Brothers : WA OR
 Heart-Earth : MT AZ WI
-Last-Bus-to-Wisdom : [StoryMap]
+Last-Bus-to-Wisdom : MT WY ND SD MN WI
 Mountain-Time : Seattle San_Fran AK MT
 Prairie-Nocturne : MT France NY Scotland
 Dancing-at-the-Rascal-Fair : Scotland Helena_MT NY Gros_Ventre
