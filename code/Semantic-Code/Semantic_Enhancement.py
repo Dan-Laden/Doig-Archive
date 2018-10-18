@@ -309,25 +309,23 @@ def geoLocate(list_of_places, list_of_locations):
             coutner = 1
 
         try:
-            geo = geolocator.geocode(place, timeout=30)
-            retrieved = False
+            geo = geolocator.geocode(place[0], timeout=10)
             index = 0
-            while not geo == None:
+            while geo != None:
                 for location in list_of_locations:
                     if not location in geo.address:
                         continue
                     if location in geo.address:
-                        retrieved = True
                         geolocations.append(geo)
                         break
 
                 if index >= len(list_of_locations):
                     break
-                elif not retrieved:
-                    new_place = place + list_of_locations[index]
+                else:
+                    new_place = place[0] + list_of_locations[index]
                     index+=1
                     try:
-                        geo = geolocator.geocode(new_place, timeout=30)
+                        geo = geolocator.geocode(new_place, timeout=10)
                     except:
                         pass
         except:
@@ -450,7 +448,6 @@ while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reade
         rawName = sys.argv[argc]
         nameOfFiles.append(key)
         path = filepath+"/"+key+".pdf"
-        print(sys.argv[argc])
         argc+=1
         while(os.path.exists(path)):
             f = open(path, 'rb')#trying to use location as part of the filesystem
@@ -459,7 +456,6 @@ while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reade
             rawText = readText(pdf)
             while argc<len(sys.argv) and "-" not in sys.argv[argc]:
                 locations.append(sys.argv[argc].replace(("_"), " "))
-                print("Location: "+sys.argv[argc])
                 argc+=1
 
             rawFiles[key] = (rawText, pages, rawName, locations) #Reads in the text then puts it in a dictionary with a lable of the filename.
