@@ -29,7 +29,6 @@ from geopy.geocoders import GeoNames #ref doc: http://geopy.readthedocs.io/en/st
 
 stoplist = set(stopwords.words('english'))#set of all stopwords in english thanks to nltk
 
-print (sys.argv)
 #########################
 #Global variables
 global numOfPlaces
@@ -170,8 +169,14 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
 
     keywordlist_text = keywordlist_text + sentiment + "|" + "SENTIMENT"+"; "
     geolocation = ""
+    throw_aways = re.compile('((M|m)arker|(H|h)istor[a-zA-Z]*)')#Historical Markers are getting picked up and to my knowledge I don't think they're anything relevent to the project
     for geoloc in geolocations:
-        geolocation = geolocation + geoloc.address + "; "
+        if "(" in geoloc[0] or "'" in geoloc[0] or throw_aways.match(geoloc[0]):
+            continue
+        elif "Gros Ventre" in geoloc[0]:
+            geoloc = list(geoloc)
+            geoloc[0] = "Gros Ventre, MT, US"
+        geolocation = geolocation + geoloc[0] + "|" + (str)(geoloc[1]) + "; "
 
 
     #outputs rawtext, keywords, and geolocations to text files
@@ -220,8 +225,10 @@ def fillItemDB(item):
         # necessary for saving changes made
         connection.commit()
 
-    except:
-        print("ERROR: "+item.ID+" already exists in item.db")
+    except Exception as e:
+        print(item.geolocations)
+        print(type(item.geolocations))
+
 
     connection.close()
 
@@ -336,6 +343,11 @@ def geoLocate(list_of_places, list_of_locations):
             #append location onto place and recheck if it comes up with anything before timeout
         counter += 1
 
+    geoplaces = []
+    for geoloc in geolocations:
+        geoplaces.append(geoloc.address)
+
+    geolocations = KeywordCounter(geoplaces)
     return geolocations
 
 
@@ -540,4 +552,6 @@ print("--- %s seconds ---" % (time.time() - start_time))
 # https://stackoverflow.com/questions/7353968/checking-if-first-letter-of-string-is-in-uppercase/7354011
 # https://pythonspot.com/nltk-stemming/ for the PorterStemmer
 # https://stackoverflow.com/questions/306400/how-to-randomly-select-an-item-from-a-list
+# https://stackoverflow.com/questions/1483429/how-to-print-an-error-in-python
+# https://stackoverflow.com/questions/7735838/typeerror-tuple-object-does-not-support-item-assignment-when-swapping-values
 #########################
