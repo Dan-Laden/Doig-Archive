@@ -24,7 +24,7 @@ import os #ref doc: https://docs.python.org/3.6/library/os.html
 import sqlite3 #ref doc: https://docs.python.org/3/library/sqlite3.html
 import errno #ref doc: https://docs.python.org/3.6/library/errno.html
 import operator #ref doc: https://docs.python.org/3/library/operator.html
-import random #ref doc: https://docs.python.org/3.7/library/random.html#random.choice
+import random
 from geopy.geocoders import GeoNames #ref doc: http://geopy.readthedocs.io/en/stable/#
 
 stoplist = set(stopwords.words('english'))#set of all stopwords in english thanks to nltk
@@ -67,7 +67,7 @@ class Item:#For database usage
 #Main function that executes all the functions before for parsing, dividing, and serving up enriched text.
 def semanticActions(key, text, pages, source, locations, queue):
     tokens = POStagging(text)
-    keywords = keywordGenerator(tokens)
+    keywords = keywordGenerator(tokens, source)
     places = multiwordPlace(tokens)
     geoplaces = geoLocate(places, locations)
     output(key, text, keywords, geoplaces, pages, source, queue)
@@ -101,7 +101,7 @@ def POStagging(text):
     return nltk.pos_tag(tokenized_set_nostop)
 
 #This function returns two different types of keywords (nouns, verbs)
-def keywordGenerator(POStext):
+def keywordGenerator(POStext, source):
     keywordsNN = []
     keywordsVB = []
     keywordsNN2chr = [] #For testing and debate on weither or not to include 2 character strings as nouns
@@ -114,6 +114,9 @@ def keywordGenerator(POStext):
             if(len(token[0])<3):
                 keywordsNN2chr.append(token[0])
             else:
+                if source == "Sweet-Thunder":
+                    if token[0].isupper():
+                        continue
                 if not(doig.match(token[0])):
                     keywordsNN.append(token[0])
         elif verb.match(token[1]):
@@ -178,7 +181,6 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
             geoloc[0] = "Gros Ventre, MT, US"
         geolocation = geolocation + geoloc[0] + "|" + (str)(geoloc[1]) + "; "
 
-
     #outputs rawtext, keywords, and geolocations to text files
     for types in filetypes:
         #NOTE If larger books are inserted this might need to be changed if chapters go over 3 digits and so on to catch all cases
@@ -225,10 +227,8 @@ def fillItemDB(item):
         # necessary for saving changes made
         connection.commit()
 
-    except Exception as e:
-        print(item.geolocations)
-        print(type(item.geolocations))
-
+    except:
+        print("ERROR: "+item.ID+" already exists in item.db")
 
     connection.close()
 
@@ -241,6 +241,8 @@ def clearItemDB():
     try:
 
         cursor.execute("""DELETE FROM ITEMS;""")
+        print("Database clear")
+
 
     #This  is for if the database is new and a table for the items is needed to be created.
     except sqlite3.OperationalError:
@@ -261,6 +263,7 @@ def clearItemDB():
 
     # necessary for saving changes made
     connection.commit()
+
 
     connection.close()
 
@@ -283,6 +286,35 @@ def multiwordPlace(POStext):
 
     return compoundLoc
 
+# #This function takes in a list of places and tries it's best to locate what is possibly a match
+# def geoServer(listPlaces): #TODO #TODO #TODO
+#     #Using Geopy for geolocations
+#     GeoNamesAccounts = ["semantic_1", "semantic_2", "semantic_3", "semantic_4", "semantic_5", "semantic_6", "semantic_7", "semantic_8", "semantic_9", "semantic_10", "semantic_11", "semantic_12"]
+#     geolocator = GeoNames(username="dan_laden")
+#     geolocations = []
+#     process_queue = []
+#     numOfPlaces = 0 #keeps track of how many places are caught by the geolocator for the queue extraction
+#     queue = multiprocessing.Queue()
+#     for loc in listPlaces: #TODO next change with a list of accounts to login with
+#         #p = multiprocessing.Process(target=geoLocate, args=(loc[0], queue, geolocator))
+#         #p.start()
+#         #process_queue.append(p)
+#         geolocations.append(Geothing())#For now this has a placeholder class till XXX usage of this API is resolved
+#
+#     #makes sure all the processes started above are killed before finishing the program.
+#     time.sleep(30)
+#     while numOfPlaces > 0:#wait
+#         if queue.empty():
+#             print("Nothing in queue")
+#             time.sleep(0.1)
+#         else:
+#             geolocations.append(queue.get())
+#             numOfPlaces-=1
+#
+#     for proc in process_queue:
+#         proc.terminate()
+#
+#     return geolocations
 
 #This takes a list and converts is into a string
 #This function goes along with stripNonAlphaNumASCII since it returns a list normally
@@ -349,7 +381,6 @@ def geoLocate(list_of_places, list_of_locations):
 
     geolocations = KeywordCounter(geoplaces)
     return geolocations
-
 
 
 #NOTE: not my code this is from: https://stackoverflow.com/a/12517490/8967976
@@ -448,8 +479,6 @@ if((sys.argv[1] != "--new" and sys.argv[1] != "--old")  or argc > len(sys.argv))
 elif(argc == len(sys.argv)):#If this program gets no directories to use it immediately exits
     print("Please include files to parse")
     exit()
-
-
 
 while(argc<len(sys.argv)):#Opening the file and putting it through the PDF reader.
     locations = []
@@ -551,7 +580,4 @@ print("--- %s seconds ---" % (time.time() - start_time))
 # https://stackoverflow.com/questions/11520492/difference-between-del-remove-and-pop-on-lists
 # https://stackoverflow.com/questions/7353968/checking-if-first-letter-of-string-is-in-uppercase/7354011
 # https://pythonspot.com/nltk-stemming/ for the PorterStemmer
-# https://stackoverflow.com/questions/306400/how-to-randomly-select-an-item-from-a-list
-# https://stackoverflow.com/questions/1483429/how-to-print-an-error-in-python
-# https://stackoverflow.com/questions/7735838/typeerror-tuple-object-does-not-support-item-assignment-when-swapping-values
 #########################
