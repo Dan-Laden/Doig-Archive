@@ -115,7 +115,7 @@ def keywordGenerator(POStext, source):
                 keywordsNN2chr.append(token[0])
             else:
                 if source == "Sweet-Thunder":
-                    if token[0].isupper():
+                    if token[0].isupper() or token[0] == "Thunder" or token[0] == "Sweet" or token[0] == "Deleted":
                         continue
                 if not(doig.match(token[0])):
                     keywordsNN.append(token[0])
@@ -272,19 +272,22 @@ def clearItemDB():
 #Creates two or more string tokens
 def multiwordPlace(POStext):
     compoundLoc = []
+    potentialLoc = []
     index = 0
     while index < len(POStext):
         try:
-            if POStext[index][1] == 'NNP' and POStext[index+1][1] == 'NNP':
-                    POStext[index] = (POStext[index][0] + " " + POStext[index+1][0], 'NNP')
-                    compoundLoc.append(POStext[index])
-                    #del POStext[index+1]
+            if POStext[index][1] == 'NNP':
+                if POStext[index+1][1] == 'NNP':
+                    compound = (POStext[index][0] + " " + POStext[index+1][0], 'NNP')
+                    compoundLoc.append(compound)
+                else:
+                    potentialLoc.append(POStext[index])
             index+=1
         except IndexError:
             index+=1
             #do nothing
 
-    return compoundLoc
+    return (compoundLoc, potentialLoc)
 
 # #This function takes in a list of places and tries it's best to locate what is possibly a match
 # def geoServer(listPlaces): #TODO #TODO #TODO
@@ -336,44 +339,45 @@ def geoLocate(list_of_places, list_of_locations):
     choice = random.choice(GeoNamesAccounts)
     GeoNamesAccounts.remove(choice)
     geolocator = GeoNames(username=choice)
-    for place in list_of_places:
-        if counter >= 1500:
+    for catagory in list_of_places:
+        for place in catagory:
+            if counter >= 1500:
+                try:
+                    choice = random.choice(GeoNamesAccounts)
+                except:
+                    GeoNamesAccounts = holder + GeoNamesAccounts
+                    choice = random.choice(GeoNamesAccounts)
+                GeoNamesAccounts.remove(choice)
+                geolocator = GeoNames(username=choice)
+                coutner = 1
+
             try:
-                choice = random.choice(GeoNamesAccounts)
-            except:
-                GeoNamesAccounts = holder + GeoNamesAccounts
-                choice = random.choice(GeoNamesAccounts)
-            GeoNamesAccounts.remove(choice)
-            geolocator = GeoNames(username=choice)
-            coutner = 1
+                geo = geolocator.geocode(place[0], timeout=10)
+                index = 0
+                while geo != None:
+                    for location in list_of_locations:
+                        if not location in geo.address:
+                            continue
+                        if location in geo.address:
+                            geolocations.append(geo)
+                            break
 
-        try:
-            geo = geolocator.geocode(place[0], timeout=10)
-            index = 0
-            while geo != None:
-                for location in list_of_locations:
-                    if not location in geo.address:
-                        continue
-                    if location in geo.address:
-                        geolocations.append(geo)
+                    if index >= len(list_of_locations):
                         break
-
-                if index >= len(list_of_locations):
-                    break
-                else:
-                    new_place = place[0] + list_of_locations[index]
-                    index+=1
-                    try:
-                        geo = geolocator.geocode(new_place, timeout=10)
-                    except:
-                        pass
-        except:
-            continue
+                    else:
+                        new_place = place[0] + list_of_locations[index]
+                        index+=1
+                        try:
+                            geo = geolocator.geocode(new_place, timeout=10)
+                        except:
+                            pass
+            except:
+                continue
 
 
 
-            #append location onto place and recheck if it comes up with anything before timeout
-        counter += 1
+                #append location onto place and recheck if it comes up with anything before timeout
+            counter += 1
 
     geoplaces = []
     for geoloc in geolocations:
