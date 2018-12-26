@@ -39,6 +39,7 @@ while read LINE;
    PARAMETERS+=${ARRAY[@]}
  done < config.arc
  python3 Semantic_Enhancement.py --old ${PARAMETERS[@]}
+ python3 Relation_Builder.py
 
 
 ##################################################################
