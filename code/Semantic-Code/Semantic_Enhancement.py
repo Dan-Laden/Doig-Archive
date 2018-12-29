@@ -2,7 +2,7 @@
 # author@ Daniel Laden          #
 # email@ dthomasladen@gmail.com #
 #################################
-
+#Test
 print("Main File")
 import time
 start_time = time.time()
@@ -115,8 +115,10 @@ def keywordGenerator(POStext, source):
                 keywordsNN2chr.append(token[0])
             else:
                 if source == "Sweet-Thunder":
-                    if token[0].isupper() or token[0] == "Thunder" or token[0] == "Sweet" or token[0] == "Deleted":
+                    if token[0] == "Thunder" or token[0] == "Sweet" or token[0] == "Deleted":
                         continue
+                if token[0].isupper(): #This should remove chapter names and read in errors that have no application to the chapter at all
+                    continue
                 if not(doig.match(token[0])):
                     keywordsNN.append(token[0])
         elif verb.match(token[1]):
@@ -132,7 +134,7 @@ def keywordGenerator(POStext, source):
     keywordsNNremove = []
     keywordsVBremove = []#first two loops are for gathering what to remove
     for keyword in keywordsNN:
-        if keyword[1] < MINIMAL_NOUN and not keyword[0].isupper():#isupper() is needed so we don't remove proper nouns since common nouns have less value
+        if keyword[1] < MINIMAL_NOUN and not keyword[0].istitle():#isupper() is needed so we don't remove proper nouns since common nouns have less value
             keywordsNNremove.append(keyword)
 
     for keyword in keywordsVB:
@@ -145,7 +147,7 @@ def keywordGenerator(POStext, source):
 
     for keyword in keywordsVBremove:
         keywordsVB.remove(keyword)
-
+                                   #DONE
     return (keywordsNN, keywordsVB)#TODO Output this differently to fix nouns and verbs
 
 #This creates a frequency dictionary for the number of occurences in the keywordList and returns them ordered by number of occurences
@@ -287,7 +289,7 @@ def multiwordPlace(POStext):
             index+=1
             #do nothing
 
-    return (compoundLoc, potentialLoc)
+    return compoundLoc + potentialLoc
 
 # #This function takes in a list of places and tries it's best to locate what is possibly a match
 # def geoServer(listPlaces): #TODO #TODO #TODO
@@ -339,45 +341,49 @@ def geoLocate(list_of_places, list_of_locations):
     choice = random.choice(GeoNamesAccounts)
     GeoNamesAccounts.remove(choice)
     geolocator = GeoNames(username=choice)
-    for catagory in list_of_places:
-        for place in catagory:
-            if counter >= 1500:
-                try:
-                    choice = random.choice(GeoNamesAccounts)
-                except:
-                    GeoNamesAccounts = holder + GeoNamesAccounts
-                    choice = random.choice(GeoNamesAccounts)
-                GeoNamesAccounts.remove(choice)
-                geolocator = GeoNames(username=choice)
-                coutner = 1
 
+
+    #removing duplicates to be sure it should already be distinct 
+    places = list(set(list_of_places))
+
+    for place in places:
+        if counter >= 1500:
             try:
-                geo = geolocator.geocode(place[0], timeout=10)
-                index = 0
-                while geo != None:
-                    for location in list_of_locations:
-                        if not location in geo.address:
-                            continue
-                        if location in geo.address:
-                            geolocations.append(geo)
-                            break
-
-                    if index >= len(list_of_locations):
-                        break
-                    else:
-                        new_place = place[0] + list_of_locations[index]
-                        index+=1
-                        try:
-                            geo = geolocator.geocode(new_place, timeout=10)
-                        except:
-                            pass
+                choice = random.choice(GeoNamesAccounts)
             except:
-                continue
+                GeoNamesAccounts = holder + GeoNamesAccounts
+                choice = random.choice(GeoNamesAccounts)
+            GeoNamesAccounts.remove(choice)
+            geolocator = GeoNames(username=choice)
+            counter = 1
+
+        try:
+            geo = geolocator.geocode(place[0], timeout=10)
+            index = 0
+            while geo != None:
+                for location in list_of_locations:
+                    if not location in geo.address:
+                        continue
+                    if location in geo.address:
+                        geolocations.append(geo)
+                        break
+
+                if index >= len(list_of_locations):
+                    break
+                else:
+                    new_place = place[0] + list_of_locations[index]
+                    index+=1
+                    try:
+                        geo = geolocator.geocode(new_place, timeout=10)
+                    except:
+                        pass
+        except:
+            continue
 
 
 
-                #append location onto place and recheck if it comes up with anything before timeout
-            counter += 1
+            #append location onto place and recheck if it comes up with anything before timeout
+        counter += 1
 
     geoplaces = []
     for geoloc in geolocations:
