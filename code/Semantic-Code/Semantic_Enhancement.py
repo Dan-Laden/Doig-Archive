@@ -173,7 +173,10 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
             keywordlist_text = keywordlist_text + key[0] + "|" + (str)(key[1]) + "; "
 
     keywordlist_text = keywordlist_text + sentiment + "|" + "SENTIMENT"+"; "
-    geolocation = ""
+
+
+    geolocation_text = ""
+    geolocation_db = ""
     throw_aways = re.compile('((M|m)arker|(H|h)istor[a-zA-Z]*)')#Historical Markers are getting picked up and to my knowledge I don't think they're anything relevent to the project
     for geoloc in geolocations:
         if "(" in geoloc[0] or "'" in geoloc[0] or throw_aways.match(geoloc[0]):
@@ -181,7 +184,8 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
         elif "Gros Ventre" in geoloc[0]:
             geoloc = list(geoloc)
             geoloc[0] = "Gros Ventre, MT, US"
-        geolocation = geolocation + geoloc[0] + "|" + (str)(geoloc[1]) + "; "
+        geolocation_text = geolocation_text + geoloc[0] + "|" + (str)(geoloc[1]) + "; "
+        geolocation_db = geolocation_db + geoloc[0]+"; "
 
     #outputs rawtext, keywords, and geolocations to text files
     for types in filetypes:
@@ -200,7 +204,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
         elif(types == "Keywords"):
             f.write(keywordlist_text)
         else:
-            f.write(geolocation)
+            f.write(geolocation_text)
 
         f.close()
 
@@ -209,10 +213,15 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     filename = filenameFix(filename)
     img = "img/"+source+"/"+(str)(value)+".png"
     img = img.replace((" "), "-")
+    if "/-" in img:
+        img = img.replace(("/-"), "/")
+
+    if "Sweet-Thunder" in source:
+        rawtext = ""
 
 
     #puts the database item in a queue to be pulled later
-    queue.put(Item(filename, rawtext, keywordlist_db, pages, source, geolocation, img, sentiment))
+    queue.put(Item(filename, rawtext, keywordlist_db, pages, source, geolocation_db, img, sentiment))
     print("Output for "+filename+" finished")
 
 #This method fills the database with a new item from the itemQueue
@@ -343,7 +352,7 @@ def geoLocate(list_of_places, list_of_locations):
     geolocator = GeoNames(username=choice)
 
 
-    #removing duplicates to be sure it should already be distinct 
+    #removing duplicates to be sure it should already be distinct
     places = list(set(list_of_places))
 
     for place in places:
