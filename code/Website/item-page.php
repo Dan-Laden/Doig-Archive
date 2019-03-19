@@ -35,12 +35,13 @@ SQL;
 </head>
 <nav>
   <ul>
-    <li><a href="index.html">Main</a></li><!-- Goes into the main .html file -->
+    <li><img src="img/logo.png" alt='MSU Logo'><a href="index.html">Main</a></li><!-- Goes into the main .html file -->
     <?php
+      $book = str_replace("-", " ", $book);
       $url = "book-page.php?book=".$book;
       echo("<li><a href='$url'>$book</a></li>")
     ?> <!-- Goes to the item page for the book -->
-    <li><a onclick="goBack()">Back</a></li><!-- Goes back to previous page -->
+    <li class="backli"><a onclick="goBack()">Back</a></li><!-- Goes back to previous page -->
   </ul>
 </nav>
 
@@ -48,9 +49,7 @@ SQL;
 
 <body>
   <div id="Main">
-    main
     <div id="Content">
-      content
       <div id="Top-Content">
 
         <!-- This div contains a picture of the item along with it's designated name -->
@@ -65,83 +64,92 @@ SQL;
         <div id="Item-Content">
           <ul>
             <!-- The Title -->
-            <li><p class="metadata-title">
+            <div><li><p class="metadata-title">
               <strong>Title </strong>
                 <?php echo("<span class='metadata-field' property='name'>$item</span>"); ?>
-            </p></li>
+            </p></li></div>
 
             <!-- The abstract -->
-            <li><p class="metadata-abstract">
+            <div><li><p class="metadata-abstract">
               <strong>Raw Text Example </strong>
               <?php echo("<span class='metadata-field' property='name'>$text</span>"); ?>
-            </p></li>
+            </p></li></div>
 
             <!-- The genre the item falls into -->
-            <li><p class="metadata-genre">
+            <div><li><p class="metadata-genre">
               <strong>Sentiment Value </strong>
               <span class="metadata-field" property="name">
                 <?php echo("<span class='metadata-field' property='name'>$sentiment</span>"); ?>
               </span>
-            </p></li>
+            </p></li></div>
 
             <!-- The page length of the document -->
-            <li><p class="metadata-length">
+            <div><li><p class="metadata-length">
               <strong>Length </strong>
               <?php echo("<span class='metadata-field' property='name'>$length</span>"); ?>
-            </p></li>
+            </p></li><div>
 
             <!-- The unique item id -->
-            <li><p class="metadata-id">
+            <div><li><p class="metadata-id">
               <strong>Object ID </strong>
               <span class="metadata-field" property="name">
                 821f03288846297c2cf43c34766a38f7
               </span>
-            </p></li>
+            </p></li><div>
 
             <!-- This is the date the item was created -->
-            <li><p class="metadata-created">
+            <div><li><p class="metadata-created">
               <strong>Date Created </strong>
               <span class="metadata-field" property="name">
                 April 30, 2018
               </span>
-            </p></li>
+            </p></li></div>
 
             <!-- The book this chapter comes from -->
-            <li><p class="metadata-book">
+            <div><li><p class="metadata-book">
               <strong>Related Book </strong>
               <?php echo("<span class='metadata-field' property='name'>$book</span>"); ?>
-            </p></li>
+            </p></li></div>
 
             <!-- The keywords of the document from python -->
-            <li><p class="metadata-keywords">
+            <div><li><p class="metadata-keywords">
               <strong>Keywords</strong>
               <span class="metadata-field" property="name">
                 <?php
                 for ($i=0; $i < 20 ; $i++) {
-                  $url = "relation-page.php?keyword=".$keywords[$i];
-                  echo("<a href='$url'>$keywords[$i]</a>; ");
+                  if ($keywords[$i]){
+                    $url = "relation-page.php?keyword=".$keywords[$i];
+                    echo("<a href='$url'>$keywords[$i]</a>; ");
+                  } else {
+                    break;
+                  }
+
                 }
                 ?>
               </span>
-            </p></li>
+            </p></li></div>
 
             <!-- The geolocations of the document from python -->
-            <li><p class="metadata-geolocations">
+            <div><li><p class="metadata-geolocations">
               <strong>Geolocations </strong>
               <span class="metadata-field" property="name">
                 <?php
                 for ($i=0; $i < 10 ; $i++) {
-                  $url = "relation-page.php?keyword=".$geoloc[$i];
-                  echo("<a href='$url'>$geoloc[$i]</a>; ");
+                  if ($geoloc[$i]) {
+                    $url = "relation-page.php?keyword=".$geoloc[$i];
+                    echo("<a href='$url'>$geoloc[$i]</a>; ");
+                  } else {
+                    break;
+                  }
+
                 }
                 ?>
               </span>
-            </p></li>
+            </p></li></div>
           </ul>
         </div>
       </div>
       <div id="Bottom-Content">
-
         <!-- These are the documents that have the closest relation number to the item -->
         <div id="Related-Content">
           <h1> More Like This </h1>
@@ -177,6 +185,10 @@ function goBack() {
 }
 </script>
 
+<!-- https://stackoverflow.com/questions/11219931/how-to-force-div-element-to-keep-its-contents-inside-container -->
+<!-- http://php.net/manual/en/function.str-replace.php -->
+<!-- http://php.net/manual/en/control-structures.else.php -->
+<!-- https://www.afterhoursprogramming.com/tutorial/php/break-and-continue/ -->
 <!--https://stackoverflow.com/questions/15481911/linking-to-a-specific-part-of-a-web-page -->
 <!--https://stackoverflow.com/questions/5456626/php-pdo-returning-single-row-->
 <!--https://stackoverflow.com/questions/871858/php-pass-variable-to-next-page-->

@@ -1,4 +1,4 @@
-nav ul li {float: left;width: 60%}
+nav ul li {float: left;width: 60%;}
 .backli{float:right;width: 40%}
 
 #Item-Picture{
@@ -9,10 +9,13 @@ nav ul li {float: left;width: 60%}
 #Top-Content{
   display: flex;
 }
-#Item-Picture h1{
+#Book-Picture {
+  width: 70%;
+}
+#Book-Picture h1{
   text-align: center;
 }
-#Item-Picture img{
+#Book-Picture img{
   display: block;
   margin-left: auto;
   margin-right: auto;
@@ -20,16 +23,14 @@ nav ul li {float: left;width: 60%}
   max-width: 250px;
   height: auto;
 }
-#Item-Content{
-  display: block;
-  flex: 1;
-  background:pink;
+
+#Item-Content li{
+  border-top: 1px solid #000;
 }
-#Item-Content ul{
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
+
+#Item-Content .grid ul li
+{
+  border-top: none;
 }
 #Related-Content{
   background: #e0e0e0;

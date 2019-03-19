@@ -10,37 +10,55 @@ nav ul {
   width: 100%;
   position: fixed;
 }
+p{font:medium Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;}
+h1{font:large Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;font-size: 2.0em;}
+nav ul li{background: #003f7f;}
+nav ul li img{
+  float: left;
+  max-width: 2.3em;
+}
 a {color:inherit;}
 nav ul li a{
-  border: 1px solid #555;
   display: block;
-  color: #333;
+  color: white;
   text-align: center;
   font-family: sans-serif;
   padding: 5px 0px;
   text-decoration: none;
-}
-nav ul li a:hover {
-  background-color: #e0e0e0;
 }
 
 #Main{
   float: left;
   width: 100%;
   height: 100%;
-  background: green;
+  background: lightgrey;
 }
 #Content{
   padding: 1%;
   background: lightgrey;
 }
 #Top-Content{
-  background: yellow;
+  background: lightgrey;
 }
 
 #Bottom-Content{
-  background: grey;
+  background: lightgrey;
 }
+
+#Item-Content{
+  display: block;
+  padding-top: 3em;
+  flex: 1;
+  background:lightgrey;
+}
+
+#Item-Content ul{
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 
 /*<!-- Code from original https://arc.lib.montana.edu/ivan-doig/item pages -->*/
 #Bottom-Content ul {
@@ -65,4 +83,6 @@ nav ul li a:hover {
     list-style: none;
     margin: 0;
     padding: 3px 7px;
+    font: medium Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.85em;
 }

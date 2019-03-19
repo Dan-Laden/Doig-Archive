@@ -1,9 +1,10 @@
 nav ul li {float: left; width: 33.31%;}
+.backli{float:left;width: 31.5%}
 
 #Item-Picture{
   float: left;
   width: 60%;
-  background: blue;
+  background: lightgrey;
 }
 #Top-Content{
   display: flex;
@@ -19,23 +20,18 @@ nav ul li {float: left; width: 33.31%;}
   max-width: 250px;
   height: auto;
 }
-#Item-Content{
-  display: block;
-  flex: 1;
-  background:pink;
+#Item-Content div{
+  border-top: 1px solid #000;
 }
-#Item-Content ul{
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
+
 #Related-Content{
   background: #e0e0e0;
 }
-.metadata-field{
-  margin-left: 25%;
+ div .metadata-field{
+  overflow: auto;
+  margin-left: 40%;
   float: right;
+  display: inline-block;
 }
 #Related-Books img{
   margin-left: auto;
@@ -49,6 +45,7 @@ nav ul li {float: left; width: 33.31%;}
 #Item-Content ul li p
 {
   font-size: 12px;
+  overflow: auto;
 }
 
 /*https://stackoverflow.com/questions/602168/in-css-what-is-the-difference-between-and-when-declaring-a-set-of-styles*/

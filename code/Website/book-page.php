@@ -43,7 +43,7 @@ SQL;
 </head>
 <nav>
   <ul>
-    <li><a href="index.html">Main</a></li><!-- Goes into the main .html file -->
+    <li><img src="img/logo.png" alt='MSU Logo'><a href="index.html">Main</a></li><!-- Goes into the main .html file -->
     <li class="backli"><a onclick="goBack()">Back</a></li><!-- Goes back to previous page -->
   </ul>
 </nav>
@@ -52,9 +52,7 @@ SQL;
 
 <body>
   <div id="Main">
-    main
     <div id="Content">
-      content
       <div id="Top-Content">
 
         <!-- This div contains a picture of the item along with it's designated name -->
@@ -66,7 +64,7 @@ SQL;
         <!--                                                                         -->
 
         <!-- This div contains all the metadata information for the item -->
-        <div id="Book-Content">
+        <div id="Item-Content">
           <ul>
             <!-- The Title -->
             <li><p class="metadata-title">
@@ -80,10 +78,12 @@ SQL;
               <!--echo("<span class='metadata-field' property='name'>$text</span>"); -->
               <div class="grid">
                 <?php
+                  $counter = 1;
                   foreach ($rows as $row)
                   {
                     $url = "item-page.php?item=".$row[0];
-                    echo("<ul><li><a href='$url'>$row[0]</a></li></ul>");
+                    echo("<ul><li><a href='$url'>Chapter $counter</a></li></ul>");
+                    $counter++;
                   }
                 ?>
               </div>
@@ -106,18 +106,18 @@ SQL;
           </ul>
         </div>
       </div>
-      <div id="Bottom-Content">
-        <ul>
-          <li id="links">
-            <a class="contact" href="https://www.lib.montana.edu/digital/contact.php?_ga=2.146077181.811359499.1534877159-1076287462.1511386704" title="contact Montana State University (MSU) Library">Contact Us</a>
-          </li>
+    </div>
+    <div id="Bottom-Content">
+      <ul>
+        <li id="links">
+          <a class="contact" href="https://www.lib.montana.edu/digital/contact.php?_ga=2.146077181.811359499.1534877159-1076287462.1511386704" title="contact Montana State University (MSU) Library">@ Contact Us</a>
+        </li>
 
-          <li id="info">
-            © Copyright 2018
-            <span property="copyrightHolder publisher"><a href="https://www.lib.montana.edu/digital/">Montana State University (MSU) Library</a></span>
-          </li>
-        </ul>
-        </div>
+        <li id="info">
+          © Copyright 2018
+          <span property="copyrightHolder publisher"><a href="https://www.lib.montana.edu/digital/">Montana State University (MSU) Library</a></span>
+        </li>
+      </ul>
       </div>
     </div>
   </div>

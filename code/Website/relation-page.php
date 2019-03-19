@@ -60,7 +60,7 @@ SQL;
 </head>
 <nav>
   <ul>
-    <li><a href="index.html">Main</a></li><!-- Goes into the main .html file -->
+    <li><img src="img/logo.png" alt='MSU Logo'><a href="index.html">Main</a></li><!-- Goes into the main .html file -->
     <li class="backli"><a onclick="goBack()">Back</a></li><!-- Goes back to previous page -->
   </ul>
 </nav>
