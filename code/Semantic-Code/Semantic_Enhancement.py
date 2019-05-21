@@ -162,6 +162,7 @@ def KeywordCounter(keywordList):
 def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     #write general text to a .txt file
     filetypes = ["Raw", "Keywords", "Geolocations"]
+    #print("Outside the geolocator") #locational information printed in console to know where the program is getting caught
 
     sentiment = getSentiment(rawtext)
 
@@ -179,7 +180,8 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     geolocation_db = ""
     throw_aways = re.compile('((M|m)arker|(H|h)istor[a-zA-Z]*)')#Historical Markers are getting picked up and to my knowledge I don't think they're anything relevent to the project
     for geoloc in geolocations:
-        if "(" in geoloc[0] or "'" in geoloc[0] or throw_aways.match(geoloc[0]):
+        print(geoloc)
+        if "(" in geoloc[0] or "'" in geoloc[0] or throw_aways.match(geoloc[0]) or "for" in geoloc[0]:
             continue
         elif "Gros Ventre" in geoloc[0]:
             geoloc = list(geoloc)
@@ -187,6 +189,9 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
         geolocation_text = geolocation_text + geoloc[0] + "|" + (str)(geoloc[1]) + "; "
         geolocation_db = geolocation_db + geoloc[0]+"; "
 
+    print(geolocation_text)
+    print(geolocation_db)
+    quit()
     #outputs rawtext, keywords, and geolocations to text files
     for types in filetypes:
         #NOTE If larger books are inserted this might need to be changed if chapters go over 3 digits and so on to catch all cases
@@ -338,65 +343,110 @@ def listToString(list):
         returnStr = returnStr +" "+ STR
     return returnStr
 
+#This function takes the geoname accounts and returns a random one at choice while
+#putting the program to sleep if the list has been exhausted
+def geoResetter(GeoNamesAccounts, holder):
+    print("geoResetter Loop") #locational information printed in console to know where the program is getting caught
+    print(holder)
+    print(GeoNamesAccounts)
+    try:
+        choice = random.choice(GeoNamesAccounts)
+    except:#GeoNamesAccounts is empty all accounts are exhausted
+        print("All accounts exhausted at this time, putting system into sleep mode for 30 minutes")
+        GeoNamesAccounts = holder + GeoNamesAccounts
+        choice = random.choice(GeoNamesAccounts)
+        time.sleep(1800) #sleep for 25 minutes since the list is exhuasted
+        print("System sleep: Over")
+    GeoNamesAccounts.remove(choice)
+    geolocator = GeoNames(username=choice)
+    return geolocator #return new account
 
 #This function is used by a multiprocessing queue in geoServer. This is where all locations are resolved
 def geoLocate(list_of_places, list_of_locations):
     #Using Geopy for geolocations NOTE this works
     GeoNamesAccounts = ["semantic_1", "semantic_2", "semantic_3", "semantic_4", "semantic_5", "semantic_6"]
+    latin = '^[ -~]+$'
     holder = []
     holder = holder + GeoNamesAccounts
-    counter = 1
     geolocations = []
     choice = random.choice(GeoNamesAccounts)
     GeoNamesAccounts.remove(choice)
     geolocator = GeoNames(username=choice)
+    geo = None
 
+    #print("After geoLocate Settings") #locational information printed in console to know where the program is getting caught
 
     #removing duplicates to be sure it should already be distinct
     places = list(set(list_of_places))
 
+
     for place in places:
-        if counter >= 1500:
+        print("place loop") #locational information printed in console to know where the program is getting caught
+        # if counter >= 1500: #Code for when we didn't have multiple locations from the config file
+        #     try:
+        #         choice = random.choice(GeoNamesAccounts)
+        #     except:
+        #         GeoNamesAccounts = holder + GeoNamesAccounts
+        #         choice = random.choice(GeoNamesAccounts)
+        #     GeoNamesAccounts.remove(choice)
+        #     geolocator = GeoNames(username=choice)
+        #     counter = 1
+
+        while geo == None:
             try:
-                choice = random.choice(GeoNamesAccounts)
-            except:
-                GeoNamesAccounts = holder + GeoNamesAccounts
-                choice = random.choice(GeoNamesAccounts)
-            GeoNamesAccounts.remove(choice)
-            geolocator = GeoNames(username=choice)
-            counter = 1
+                geo = geolocator.geocode(place[0], timeout=20)
+                if geo != None:
+                    if re.search(latin, geo): #is it an latin letter location
+                        for location in list_of_locations:
+                            print(geo.address)
+                            print(location+"\n")
+                            split_loc = geo.address.split(" ") #len is for country names or state names
+                            if location in geo.address or 0 < len(split_loc) < 3:
+                                geolocations.append(geo)
+                                break
+                            elif not location in geo.address:
+                                pass
 
-        try:
-            geo = geolocator.geocode(place[0], timeout=10)
-            index = 0
-            while geo != None:
-                for location in list_of_locations:
-                    if not location in geo.address:
-                        continue
-                    if location in geo.address:
-                        geolocations.append(geo)
-                        break
 
-                if index >= len(list_of_locations):
-                    break
-                else:
-                    new_place = place[0] + list_of_locations[index]
-                    index+=1
+                while True: #continue till all locations are exhausted
+                    print("going through location loop") #locational information printed in console to know where the program is getting caught
+                    if not "Montana" in list_of_locations and not "Washington" in list_of_locations:
+                        break #NOTE this is to avoid increasing the time complexity too much, since he's a Montana authour most of his work will feature town names in Montana and Washington
+                    new_place = place[0] +" "+ list_of_locations[0]
                     try:
-                        geo = geolocator.geocode(new_place, timeout=10)
-                    except:
-                        pass
-        except:
-            continue
+                        geo = geolocator.geocode(new_place, timeout=20)
 
+                        if geo == None or not re.search(latin, geo):
+                            break
+                        else: #geo has something
+                            break
+                    except Exception as e:
+                        print(e)
+                        geoResetter(GeoNamesAccounts, holder) #need to switch account because lookup limit has been reached
+                        continue
 
+                if geo != None:
+                    for location in list_of_locations:
+                        print(geo.address)
+                        print(location+"\n")
+                        if location in geo.address:
+                            geolocations.append(geo)
+                            break
+                        elif not location in geo.address:
+                            pass
 
-            #append location onto place and recheck if it comes up with anything before timeout
-        counter += 1
+                    break
+
+            except Exception as e:
+                print(e)
+                geoResetter(GeoNamesAccounts, holder) #need to switch account because lookup limit has been reached
+                continue
+
 
     geoplaces = []
+    print(geolocations)
     for geoloc in geolocations:
-        geoplaces.append(geoloc.address)
+        geoplaces.append(geoloc.address+" ("+str(geoloc.latitude)+","+str(geoloc.longitude)+")")
 
     geolocations = KeywordCounter(geoplaces)
     return geolocations
@@ -579,10 +629,20 @@ print("--- %s seconds to load all information in the databases ---" % (time.time
 #End of main code
 #########################
 
-print("--- %s seconds ---" % (time.time() - start_time))
+seconds = round(time.time() - start_time)
+minutes = 0
+hours = 0
+if seconds > 60:
+    minutes = int(seconds/60)
+    seconds = seconds - (minutes * 60)
+if minutes > 60:
+    hours = int(minutes/60)
+    minutes = minutes - (hours * 60)
+print("--- %s hours ---\n--- %s minutes ---\n--- %s seconds ---" % (hours, minutes, seconds))
 #########################
 #resources used for code so far
 #
+# https://stackoverflow.com/questions/38197854/python3-detect-non-english-for-unicode
 # https://stackoverflow.com/questions/15547409/how-to-get-rid-of-punctuation-using-nltk-tokenizer
 # https://github.com/nltk/nltk/wiki/Frequently-Asked-Questions-(Stackoverflow-Edition)
 # https://programminghistorian.org/lessons/normalizing-data

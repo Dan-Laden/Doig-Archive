@@ -148,13 +148,27 @@ def makeRelations(relationList):
 
 relationList = []
 for filepath in os.listdir('output'):
-    path = "output/"+filepath+"/Keywords/*.txt"
-    files = glob.glob(path)
-    for fullpath in files:
-        f = open(fullpath, 'r')
+    path_keyword = "output/"+filepath+"/Keywords/*.txt"
+    path_geolocation = "output/"+filepath+"/Geolocations/*.txt"
+    file_key = glob.glob(path_keyword)
+    file_geo = glob.glob(path_geolocation)
+    for fullpath_key, fullpath_geo in zip(file_key, file_geo):
+        f = open(fullpath_key, 'r')
+        g = open(fullpath_geo, 'r')
+
+        #getting the keywordss first
         keywords = f.readline()
         keywordlist = keywords.split('; ')
         keywordlist.pop() #to removed the empty string at the end of the list
+
+        #need the same thing for the Geolocations
+        geolocate = g.readline()
+        geolist = geolocate.split('; ')
+        geolist.pop()
+
+        #combine the two lists
+        keywordlist = keywordlist + geolist
+
 
         occurenceList ={}
         for keyword in keywordlist:
@@ -162,7 +176,7 @@ for filepath in os.listdir('output'):
             occurenceList[keyword[0]] = keyword[1]
 
 
-        chapter = getDBname(fullpath)
+        chapter = getDBname(fullpath_key)
         conn = sqlite3.connect('items.db')
         c = conn.cursor()
         sqlget = """SELECT Pages from ITEMS
@@ -179,7 +193,16 @@ print("--- %s seconds to create all relations ---" % (time.time() - start_time))
 #NOTE start of relation building
 fillRelationDB(makeRelations(relationList)) #creates the relations and fills a database with those relations
 
-print("--- %s seconds to connect all relations ---" % (time.time() - start_time))
+seconds = round(time.time() - start_time)
+minutes = 0
+hours = 0
+if seconds > 60:
+    minutes = int(seconds/60)
+    seconds = seconds - (minutes * 60)
+if minutes > 60:
+    hours = int(minutes/60)
+    minutes = minutes - (hours * 60)
+print("--- %s hours ---\n--- %s minutes ---\n--- %s seconds ---" % (hours, minutes, seconds))
 
 #End of main code
 #########################

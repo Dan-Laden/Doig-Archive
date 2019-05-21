@@ -1,16 +1,16 @@
-This-House-of-Sky : MT
-Winter-Brothers : WA OR
-Heart-Earth : MT AZ WI
-Last-Bus-to-Wisdom : MT WY ND SD MN WI
-Mountain-Time : Seattle San_Fran AK MT
-Prairie-Nocturne : MT France NY Scotland
-Dancing-at-the-Rascal-Fair : Scotland Helena_MT NY Gros_Ventre
-The-Eleventh-Man : Bozeman_MT Alaska
-Bucking-the-Sun : MT Fort_Peck Gros_Ventre
-English-Creek : MT Gros_Ventre
-Ride-with-me-Mariah-Montana : MT Gros_Ventre
-The-Sea-Runners : AK OR WA BC
-Work-Song : Butte_MT
-The-Bartenders-Tale : Gros_Ventre Fort_Peck MT AZ Canada
-The-Whistling-Season : MT IL
-Sweet-Thunder : MT
+This-House-of-Sky : Montana
+Winter-Brothers : Washington Oregon
+Heart-Earth : Montana Arizona Wisconsin
+Last-Bus-to-Wisdom : Montana Wyoming North_Dakota South_Dakota Minnesota Wisconsin
+Mountain-Time : Montana Arkansas Washington California
+Prairie-Nocturne : Montana France New_York Scotland
+Dancing-at-the-Rascal-Fair : Montana Scotland New_York
+The-Eleventh-Man : Montana Alaska
+Bucking-the-Sun : Montana
+English-Creek : Montana
+Ride-with-me-Mariah-Montana : Montana
+The-Sea-Runners : Washington Arkansas Oregon British_Columbia
+Work-Song : Montana
+The-Bartenders-Tale : Montana Arizona Canada
+The-Whistling-Season : Montana Illinois
+Sweet-Thunder : Montana
