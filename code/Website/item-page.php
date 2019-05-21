@@ -185,6 +185,7 @@ function goBack() {
 }
 </script>
 
+<!-- https://www.geeksforgeeks.org/php-str_replace-function/ -->
 <!-- https://stackoverflow.com/questions/11219931/how-to-force-div-element-to-keep-its-contents-inside-container -->
 <!-- http://php.net/manual/en/function.str-replace.php -->
 <!-- http://php.net/manual/en/control-structures.else.php -->
