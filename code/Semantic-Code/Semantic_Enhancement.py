@@ -2,7 +2,6 @@
 # author@ Daniel Laden          #
 # email@ dthomasladen@gmail.com #
 #################################
-#Test
 print("Main File")
 import time
 start_time = time.time()
@@ -178,20 +177,18 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
 
     geolocation_text = ""
     geolocation_db = ""
+    #print(geolocations)
     throw_aways = re.compile('((M|m)arker|(H|h)istor[a-zA-Z]*)')#Historical Markers are getting picked up and to my knowledge I don't think they're anything relevent to the project
     for geoloc in geolocations:
-        print(geoloc)
-        if "(" in geoloc[0] or "'" in geoloc[0] or throw_aways.match(geoloc[0]) or "for" in geoloc[0]:
+        #print(geoloc[0])
+        if geoloc[0].count('(') > 1 or "'" in geoloc[0] or throw_aways.match(geoloc[0]) or "for" in geoloc[0] or "of" in geoloc[0] or " Dam" in geoloc[0] or "Where" in geoloc[0]:
             continue
         elif "Gros Ventre" in geoloc[0]:
             geoloc = list(geoloc)
-            geoloc[0] = "Gros Ventre, MT, US"
+            geoloc[0] = "Gros Ventre, MT, US (46.8797, 110.3626)"
         geolocation_text = geolocation_text + geoloc[0] + "|" + (str)(geoloc[1]) + "; "
         geolocation_db = geolocation_db + geoloc[0]+"; "
 
-    print(geolocation_text)
-    print(geolocation_db)
-    quit()
     #outputs rawtext, keywords, and geolocations to text files
     for types in filetypes:
         #NOTE If larger books are inserted this might need to be changed if chapters go over 3 digits and so on to catch all cases
@@ -224,7 +221,6 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
     if "Sweet-Thunder" in source:
         rawtext = ""
 
-
     #puts the database item in a queue to be pulled later
     queue.put(Item(filename, rawtext, keywordlist_db, pages, source, geolocation_db, img, sentiment))
     print("Output for "+filename+" finished")
@@ -233,6 +229,7 @@ def output(filename, rawtext, keylist, geolocations, pages, source, queue):
 def fillItemDB(item):
     connection = sqlite3.connect("items.db")
     cursor = connection.cursor()
+    #print(item.geolocations)
 
     sql_addto = """INSERT INTO ITEMS (ID, RawText, Keyword, Pages, RelatedBook, Geolocation, Img, Emotion)
     VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}');""".format(item.ID, item.rawText, item.keywords, item.pages, item.relatedBook, item.geolocations, item.img, item.emotion)
@@ -346,9 +343,7 @@ def listToString(list):
 #This function takes the geoname accounts and returns a random one at choice while
 #putting the program to sleep if the list has been exhausted
 def geoResetter(GeoNamesAccounts, holder):
-    print("geoResetter Loop") #locational information printed in console to know where the program is getting caught
-    print(holder)
-    print(GeoNamesAccounts)
+    #print("geoResetter Loop") #locational information printed in console to know where the program is getting caught
     try:
         choice = random.choice(GeoNamesAccounts)
     except:#GeoNamesAccounts is empty all accounts are exhausted
@@ -372,16 +367,21 @@ def geoLocate(list_of_places, list_of_locations):
     choice = random.choice(GeoNamesAccounts)
     GeoNamesAccounts.remove(choice)
     geolocator = GeoNames(username=choice)
-    geo = None
 
     #print("After geoLocate Settings") #locational information printed in console to know where the program is getting caught
 
     #removing duplicates to be sure it should already be distinct
     places = list(set(list_of_places))
 
+    #print(len(places))
 
+    # i = 0
     for place in places:
-        print("place loop") #locational information printed in console to know where the program is getting caught
+        if (len(place) == 1) and (place.lower() == "island" or place.lower() == "islands"):
+            pass
+        # i += 1
+        geo = None
+        #print("new place loop") #locational information printed in console to know where the program is getting caught
         # if counter >= 1500: #Code for when we didn't have multiple locations from the config file
         #     try:
         #         choice = random.choice(GeoNamesAccounts)
@@ -394,12 +394,17 @@ def geoLocate(list_of_places, list_of_locations):
 
         while geo == None:
             try:
+                #print("in geolocator loop")
                 geo = geolocator.geocode(place[0], timeout=20)
+
                 if geo != None:
-                    if re.search(latin, geo): #is it an latin letter location
+                    if re.search(latin, geo.address): #is it an latin letter location
+                        if 3>len(geo.address):
+                            geolocations.append(geo)
+                            break
                         for location in list_of_locations:
-                            print(geo.address)
-                            print(location+"\n")
+                            #print(geo.address)
+                            #print(location+"\n")
                             split_loc = geo.address.split(" ") #len is for country names or state names
                             if location in geo.address or 0 < len(split_loc) < 3:
                                 geolocations.append(geo)
@@ -407,44 +412,50 @@ def geoLocate(list_of_places, list_of_locations):
                             elif not location in geo.address:
                                 pass
 
-
+                break
                 while True: #continue till all locations are exhausted
-                    print("going through location loop") #locational information printed in console to know where the program is getting caught
+                    #print("going through location loop") #locational information printed in console to know where the program is getting caught
                     if not "Montana" in list_of_locations and not "Washington" in list_of_locations:
                         break #NOTE this is to avoid increasing the time complexity too much, since he's a Montana authour most of his work will feature town names in Montana and Washington
                     new_place = place[0] +" "+ list_of_locations[0]
+                    #print(new_place)
+                    #print(place[0])
+                    #print(list_of_locations[0])
                     try:
                         geo = geolocator.geocode(new_place, timeout=20)
 
-                        if geo == None or not re.search(latin, geo):
-                            break
-                        else: #geo has something
-                            break
+                        #print(geo)
+
+                        break
                     except Exception as e:
-                        print(e)
-                        geoResetter(GeoNamesAccounts, holder) #need to switch account because lookup limit has been reached
+                        #print(type(e))
+                        if "limit" in e:
+                            geoResetter(GeoNamesAccounts, holder) #need to switch account because lookup limit has been reached
                         continue
 
                 if geo != None:
                     for location in list_of_locations:
-                        print(geo.address)
-                        print(location+"\n")
+                        #print(geo.address)
+                        #print(location+"\n")
                         if location in geo.address:
                             geolocations.append(geo)
                             break
                         elif not location in geo.address:
                             pass
 
-                    break
+                break
 
             except Exception as e:
                 print(e)
                 geoResetter(GeoNamesAccounts, holder) #need to switch account because lookup limit has been reached
                 continue
 
+    # Used to error check looping to make sure the same amount of iterations were happening as there were places
+    # print(len(places))
+    # print(str(i)+" interations")
 
     geoplaces = []
-    print(geolocations)
+    #print(geolocations)
     for geoloc in geolocations:
         geoplaces.append(geoloc.address+" ("+str(geoloc.latitude)+","+str(geoloc.longitude)+")")
 
