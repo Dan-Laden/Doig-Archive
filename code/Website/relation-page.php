@@ -23,6 +23,14 @@
     ORDER BY length(ID), ID;
 SQL;
 
+  #This is a exact search
+  $getKeywords=<<<SQL
+    SELECT  * FROM RELATIONS
+    WHERE Keyword=:fill
+    ORDER BY Weight;
+SQL;
+
+  # This is a wild card search
   $getKeywords=<<<SQL
     SELECT * from RELATIONS
     WHERE Keyword LIKE :fill
@@ -69,7 +77,7 @@ SQL;
   <div id="Main">
     main
     <div id="Content">
-      <?php echo("<h1>$keyword</h1>");  ?>
+      <?php echo("<h1>$keywords</h1>");  ?>
       <h4> __________________________________ </h4>
       <div id="Top-Content">
         <h2> Related Items </h2>
