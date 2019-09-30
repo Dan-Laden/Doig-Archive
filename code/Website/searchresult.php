@@ -1,5 +1,6 @@
 <?php
   $searchword = $_GET['searchword'];
+  $fuzzySearch = $_GET['Match'];
 
   #This is for fixing the possibility of sql injections
   function prepdb($db, $sql, $filler){
@@ -18,7 +19,13 @@
   $itemdb  = new PDO($itemDir) or die("Database 404: Error code 4060");
   $keyworddb  = new PDO($keywordDir) or die("Database 404: Error code 4060");
 
-  $search = "%".$searchword."%";
+  if($fuzzySearch == 'off')
+  {
+      $search = $searchword;
+  } else {
+    $search = "%".$searchword."%";
+  };
+
 
 
 

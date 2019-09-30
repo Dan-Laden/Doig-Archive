@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>Grid Menu | Demo 1 | Codrops</title>
+		<title>Semantic Doig</title>
 		<meta name="description" content="A CSS Grid powered menu with a box look" />
 		<meta name="keywords" content="menu, css grid, box, navigation, web development, animation" />
 		<meta name="author" content="Codrops" />
@@ -16,9 +16,9 @@
 		<main>
 			<div class="message">To see the menu, please view on a larger screen.</div>
 			<div class="content content--fixed">
-				<nav class="demos">
+				<!-- <nav class="demos">
 					<a href="https://github.com/codrops/GridMenu" class="github">github</a>
-				</nav>
+				</nav> -->
 				<button class="menu-trigger">+ info</button>
 			</div>
 			<div id="content-1" class="content content--switch content--switch-current"> <!--Main Content -->
@@ -27,12 +27,13 @@
 				<div class="content__location">Presented by Montana State University's Special Collections</div>
 			</div>
 			<div id="content-2" class="content content--switch">
-				<h2 class="content__title">Venue</h2>
+				<h2 class="content__title">	<a href="https://github.com/Dan-Laden/Doig-Archive" class="github">Main Code</a></h2>
+				<a href="https://github.com/codrops/GridMenu" class="github">front page template</a>
 
 			</div>
 			<div id="content-3" class="content content--switch">
-				<h2 class="content__title">Sponsors</h2>
-				<p class="content__text">Informing vertical integration while remembering to funnel users. Take thought leadership with the possibility to surprise and delight. Target analytics to in turn infiltrate new markets. Demonstrate audience segments so that as an end result, we think outside the box. Create analytics in order to make the logo bigger.</p>
+				<h2 class="content__title">Map</h2>
+				<iframe width="650" height="500" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" title="Ivan-Doig-Map" src="https://arcgis.com/apps/Embed/index.html?webmap=986c66391aa44871a7beee29bc0d6dd5&extent=-178.4309,0.097,5.4363,66.1997&zoom=true&previewImage=false&scale=true&disable_scroll=true&theme=light&zoom=9"></iframe>
 			</div>
 			<div id="content-4" class="content content--switch">
 				<h2 class="content__title">Books</h2>
@@ -99,8 +100,11 @@
 			</div>
 			<div id="content-5" class="content content--switch">
 				<form name="search" action="searchresult.php">
-					<input type="text" name="searchword">
-					<input type="submit" value="Submit">
+					<ul>
+						<input type="text" name="searchword" id="Search-Bar">
+						Fuzzy Search?<input type="checkbox" name="Match" id="Match">
+						<input type="submit" value="Submit" id="Submit-Button">
+					</ul>
 				</form>
 			</div>
 			<div id="content-6" class="content content--switch">
@@ -145,8 +149,8 @@
 					<div class="grim__item-bg grim__item-bg--7"></div>
 					<a href="#content-3" class="grim__link grim__item-content">
 						<div class="grim__item-inner">
-							<h3 class="grim__item-title">[Random-Book]</h3>
-							<span class="grim__item-desc">Try this feature novel</span>
+							<h3 class="grim__item-title">Doig Map</h3>
+							<span class="grim__item-desc">A heatmap display of Doig's works</span>
 						</div>
 					</a>
 				</div>
@@ -172,7 +176,7 @@
 					<div class="grim__item-bg grim__item-bg--10" data-duration="1000" data-easing="easeOutQuint"></div>
 					<a href="#content-6" class="grim__link grim__item-content">
 						<div class="grim__item-inner">
-							<h3 class="grim__item-title">The Authour</h3>
+							<h3 class="grim__item-title">The Author</h3>
 							<span class="grim__item-desc">About the author.</span>
 						</div>
 					</a>
@@ -184,3 +188,6 @@
 		<script src="js/menu.js"></script>
 	</body>
 </html>
+
+<!-- References for code -->
+<!-- https://stackoverflow.com/questions/5743177/mysql-how-to-search-for-exact-word-match-using-like -->
