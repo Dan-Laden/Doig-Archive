@@ -47,7 +47,7 @@ for loc in doig_locations:
     latitude = float(point[0])
     longitude = float(point[1])
 
-    point = Point((latitude, longitude))
+    point = Point((longitude, latitude))
 
     features.append(Feature(geometry=point, properties={"name": location, "hits": doig_locations[loc]}))
 
