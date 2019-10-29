@@ -317,6 +317,22 @@ main {
 	grid-template-columns:repeat(3,1fr);
 	/*justify-items:center;*/
 	}
+	.embed-container {
+		position: relative;
+		padding-bottom: 80%;
+		height: 0;
+		max-width: 100%;
+		}
+		.embed-container{
+			position: static;
+			top: 0;
+			left: 0;
+			}
+		small{
+			position: absolute;
+			z-index: 40;
+			margin-bottom: -15px;
+		}
 
 
 

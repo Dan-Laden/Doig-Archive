@@ -152,12 +152,12 @@ SQL;
       <div id="Bottom-Content">
         <!-- These are the documents that have the closest relation number to the item -->
         <div id="Related-Content">
-          <h1> More Like This </h1>
+          <!-- <h1> More Like This </h1>
           <div id="Related-Books">
             <img src="img/related1.jpg" alt="Book related to This House of Sky">
             <img src="img/related2.jpg" alt="Book related to This House of Sky">
             <img src="img/related3.jpg" alt="Book related to This House of Sky">
-          </div>
+          </div> -->
         </div>
         <div id="Link-Content">
           <ul>

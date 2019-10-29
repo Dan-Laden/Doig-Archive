@@ -33,7 +33,11 @@
 			</div>
 			<div id="content-3" class="content content--switch">
 				<h2 class="content__title">Map</h2>
-				<iframe width="650" height="500" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" title="Ivan-Doig-Map" src="https://arcgis.com/apps/Embed/index.html?webmap=986c66391aa44871a7beee29bc0d6dd5&extent=-178.4309,0.097,5.4363,66.1997&zoom=true&previewImage=false&scale=true&disable_scroll=true&theme=light&zoom=9"></iframe>
+				<div class="embed-container">
+					<small><a href="//sscmsu.maps.arcgis.com/apps/Embed/index.html?webmap=986c66391aa44871a7beee29bc0d6dd5&extent=-131.717,36.9747,-85.7502,52.6353&zoom=true&scale=true&disable_scroll=true&theme=light" style="color:#0000FF;text-align:left" target="_blank">View larger map for more information</a></small>
+					<br>
+					<iframe width="600" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" title="Ivan-Doig-Map" src="https://arcgis.com/apps/Embed/index.html?webmap=986c66391aa44871a7beee29bc0d6dd5&extent=-131.717,36.9747,-85.7502,52.6353&zoom=true&previewImage=false&scale=true&disable_scroll=true&theme=dark"></iframe>
+				</div>
 			</div>
 			<div id="content-4" class="content content--switch">
 				<h2 class="content__title">Books</h2>
@@ -99,9 +103,9 @@
 				</div>
 			</div>
 			<div id="content-5" class="content content--switch">
-				<form name="search" action="searchresult.php">
+				<form name="search" action="relation-page.php">
 					<ul>
-						<input type="text" name="searchword" id="Search-Bar">
+						<input type="text" name="keyword" id="Search-Bar">
 						Fuzzy Search?<input type="checkbox" name="Match" id="Match">
 						<input type="submit" value="Submit" id="Submit-Button">
 					</ul>
