@@ -1,5 +1,6 @@
 <?php
   $keyword = $_GET['keyword'];
+  $fuzzySearch = $_GET['Match'];
 
   #This is for fixing the possibility of sql injections
   function prepdb($db, $sql, $filler){
@@ -30,20 +31,34 @@ SQL;
     ORDER BY Weight;
 SQL;
 
-  # This is a wild card search
-  $getKeywords=<<<SQL
-    SELECT * from RELATIONS
-    WHERE Keyword LIKE :fill
-    ORDER BY Weight;
+  if(!$fuzzySearch)
+  {
+      $search = $searchword;
+
+      #This is a exact search
+      $getKeywords=<<<SQL
+        SELECT  * FROM RELATIONS
+        WHERE Keyword=:fill
+        ORDER BY Weight;
 SQL;
+  } else {
+    $search = $searchword."%";
+
+    # This is a wild card search
+    $getKeywords=<<<SQL
+      SELECT * from RELATIONS
+      WHERE Keyword LIKE :fill
+      ORDER BY Weight;
+SQL;
+  };
 
   $keywords = prepdb($keyworddb, $getKeywords, $keyword);
 
 
   #instead of getting if the keyword exists this finds what item the keyword appears in
   $relations = array();
-  foreach ($keywords as $keyword) {
-    $chapter = $keyword["SourceFile"];
+  foreach ($keywords as $key) {
+    $chapter = $key["SourceFile"];
     if(!(in_array($chapter, $relations)))
     {
       array_push($relations, $chapter);
@@ -57,6 +72,7 @@ SQL;
     array_push($rel_images, $img);
   }
 
+  $numResults = count($relations);
  ?>
 <!DOCTYPE html>
 <html>
@@ -77,8 +93,9 @@ SQL;
   <div id="Main">
     main
     <div id="Content">
-      <?php echo("<h1>$keywords</h1>");  ?>
+      <?php echo("<h1>$keyword</h1>");  ?>
       <h4> __________________________________ </h4>
+      <?php echo("<h4>$numResults results have been found</h4>");  ?>
       <div id="Top-Content">
         <h2> Related Items </h2>
 
